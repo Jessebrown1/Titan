@@ -10,8 +10,16 @@ const date = new Intl.DateTimeFormat(site.locale, { dateStyle: 'medium', timeSty
 
 export const formatPrice = (v) => (v == null || v === '' ? 'Price on request' : currency.format(Number(v)));
 export const formatMileage = (v) => (v == null || v === '' ? '—' : `${number.format(Number(v))} ${site.distanceUnit}`);
+const compact = new Intl.NumberFormat(site.locale, {
+  style: 'currency', currency: site.currency, notation: 'compact', maximumFractionDigits: 1,
+});
+export const formatCompact = (v) => compact.format(Number(v || 0));
 export const formatNumber = (v) => number.format(Number(v || 0));
 export const formatDate = (v) => (v ? date.format(new Date(v)) : '—');
+
+export const formatRate = (v) => `${formatPrice(v)} / day`;
+export const isRentable = (v) => Boolean(v?.for_rent && v.rent_per_day > 0 && v.status !== 'sold');
+export const isForSale = (v) => v?.for_sale !== false;
 
 export const vehicleTitle = (v) => (v ? `${v.year} ${v.make} ${v.model}` : '');
 

@@ -5,10 +5,10 @@
   display: inline-block; overflow: hidden; vertical-align: top;
   padding: 0.08em 0 0.12em; margin: -0.08em 0 -0.12em;
 }
-.split__piece { display: inline-block; will-change: transform; transform-origin: 0 100%; }
+.split__piece { display: inline-block; transform-origin: 0 100%; }
 
 /* ───────── Magnetic wrapper ───────── */
-.magnetic { display: inline-block; will-change: transform; }
+.magnetic { display: inline-block; }
 
 /* ───────── Scroll progress ───────── */
 .scroll-progress {
@@ -17,7 +17,7 @@
 }
 
 /* ───────── Tilt card + glare ───────── */
-.tilt { position: relative; height: 100%; border-radius: var(--radius-lg); will-change: transform; }
+.tilt { position: relative; height: 100%; border-radius: var(--radius-lg); }
 .tilt__glare {
   position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
   transition: opacity 0.5s var(--ease); mix-blend-mode: soft-light;
@@ -27,7 +27,7 @@
 
 /* ───────── Image reveal ───────── */
 .img-reveal { overflow: hidden; }
-.img-reveal img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
+.img-reveal img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ───────── Button shine ───────── */
 .btn--shine { position: relative; overflow: hidden; isolation: isolate; }
@@ -39,25 +39,29 @@
 .btn--shine:hover::after { transform: translateX(120%); }
 
 /* ───────── Hero motion details ───────── */
-.hero__word-wrap { display: flex; align-items: flex-end; white-space: nowrap; will-change: transform; }
+.hero__word-wrap { display: flex; align-items: flex-end; white-space: nowrap; }
 .hero__dot {
   display: inline-block; font-family: var(--font-display); font-size: var(--word); font-weight: 600;
   line-height: 0.84; color: var(--accent); margin-left: -0.02em;
 }
-.hero__car-inner, .hero__car-stage { position: relative; will-change: transform; }
+.hero__car-inner, .hero__car-stage { position: relative; }
 .hero__sheen {
   position: absolute; inset: 0; pointer-events: none;
   -webkit-mask: url('/images/hero-car.webp') center / 100% 100% no-repeat;
   mask: url('/images/hero-car.webp') center / 100% 100% no-repeat;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0) 44%, rgba(255, 255, 255, 0.42) 50%, rgba(255, 255, 255, 0) 56%, transparent 62%);
-  background-size: 320% 100%; background-position: 160% 0;
-  animation: hero-sheen 8s 2.1s var(--ease) infinite;
+  overflow: hidden;
+}
+.hero__sheen::before {
+  /* moved with transform so the sweep runs on the GPU without repainting */
+  content: ''; position: absolute; inset: 0 auto 0 0; width: 45%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.4) 50%, transparent);
+  transform: translateX(-120%);
+  animation: hero-sheen 1.5s 0.9s var(--ease) 1 both;
 }
 @keyframes hero-sheen {
-  0% { background-position: 160% 0; }
-  32%, 100% { background-position: -60% 0; }
+  to { transform: translateX(320%); }
 }
-:root[data-theme='dark'] .hero__car::before {
+:root[data-theme="dark"] .hero__car-stage::before {
   /* soft studio light behind the car in dark mode */
   content: ''; position: absolute; inset: -10% 0 10%; z-index: -1; pointer-events: none;
   background: radial-gradient(50% 45% at 50% 55%, rgba(170, 185, 255, 0.12), transparent 70%);
@@ -83,7 +87,7 @@
 @keyframes marquee { to { transform: translateX(-50%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__sheen, .marquee__track { animation: none; }
+  .hero__sheen::before, .marquee__track { animation: none; }
   .btn--shine::after { display: none; }
 }
 

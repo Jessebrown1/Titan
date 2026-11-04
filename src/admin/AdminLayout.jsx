@@ -1,18 +1,37 @@
-import { NavLink, Outlet, Link } from 'react-router-dom';
-import { LayoutGrid, CarFront, Inbox, LogOut, ExternalLink, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
+import { LayoutGrid, CarFront, KeyRound, Inbox, LogOut, ExternalLink, Plus } from 'lucide-react';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
+import { listAllMessages } from '../services/enquiriesAdmin';
 
 const ITEMS = [
   { to: '/admin', label: 'Overview', icon: LayoutGrid, end: true },
   { to: '/admin/vehicles', label: 'Vehicles', icon: CarFront, end: true },
   { to: '/admin/vehicles/new', label: 'Add', icon: Plus, mobileOnly: true },
-  { to: '/admin/enquiries', label: 'Enquiries', icon: Inbox },
+  { to: '/admin/rentals', label: 'Rentals', icon: KeyRound, count: 'rental' },
+  { to: '/admin/enquiries', label: 'Enquiries', icon: Inbox, count: 'sale' },
 ];
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
+  const { pathname } = useLocation();
+  const [counts, setCounts] = useState({ rental: 0, sale: 0 });
+
+  // New-message badges; refreshed whenever the admin moves between pages.
+  useEffect(() => {
+    let active = true;
+    listAllMessages()
+      .then((all) => {
+        if (!active) return;
+        const fresh = all.filter((m) => m.status === 'new');
+        setCounts({ rental: fresh.filter((m) => m.type === 'rental').length, sale: fresh.filter((m) => m.type !== 'rental').length });
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [pathname]);
+
   return (
     <div className="admin">
       <aside className="admin__side">
@@ -20,9 +39,10 @@ export default function AdminLayout() {
 
         {/* Sidebar on desktop; fixed bottom tab bar on phones and tablets */}
         <nav className="admin__nav" aria-label="Admin">
-          {ITEMS.map(({ to, label, icon: Icon, end, mobileOnly }) => (
+          {ITEMS.map(({ to, label, icon: Icon, end, mobileOnly, count }) => (
             <NavLink key={to} to={to} end={end} className={`admin__link${mobileOnly ? ' admin__link--mobile' : ''}`}>
               <Icon aria-hidden="true" /> <span>{label}</span>
+              {count && counts[count] > 0 && <b className="admin__count" aria-label={`${counts[count]} new`}>{counts[count]}</b>}
             </NavLink>
           ))}
         </nav>

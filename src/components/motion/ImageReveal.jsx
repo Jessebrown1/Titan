@@ -14,15 +14,15 @@ export default function ImageReveal({ src, alt, className, delay = 0, from = 'bo
       initial={{ clipPath: hidden }}
       whileInView={{ clipPath: 'inset(0% 0% 0% 0%)' }}
       viewport={{ once: true, margin: '0px 0px -12% 0px' }}
-      transition={{ duration: 1.3, delay, ease: EASE }}
+      transition={{ duration: 0.8, delay: delay * 0.5, ease: EASE }}
     >
       <motion.img
         src={src}
         alt={alt}
-        initial={{ scale: 1.25 }}
+        initial={{ scale: 1.12 }}
         whileInView={{ scale: 1 }}
         viewport={{ once: true, margin: '0px 0px -12% 0px' }}
-        transition={{ duration: 1.8, delay, ease: EASE }}
+        transition={{ duration: 1, delay: delay * 0.5, ease: EASE }}
         {...imgProps}
       />
     </motion.div>

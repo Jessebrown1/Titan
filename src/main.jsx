@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import App from './App';
-import { AuthProvider } from './hooks/useAuth';
 import { ThemeProvider } from './hooks/useTheme';
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/sora/wght.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/layout.css';
@@ -17,9 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <MotionConfig reducedMotion="user">
         <ThemeProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <App />
         </ThemeProvider>
       </MotionConfig>
     </BrowserRouter>

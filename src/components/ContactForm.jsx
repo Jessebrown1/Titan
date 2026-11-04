@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Info, Send, Mail, MessageCircle } from 'lucide-react';
 import { submitEnquiry } from '../services/enquiries';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/backend';
 import { links, site } from '../config/site';
 
 const EMPTY = { full_name: '', email: '', phone: '', vehicle_interest: '', message: '', company: '' };
@@ -117,7 +117,7 @@ export default function ContactForm({ defaultVehicle = '', vehicleId = null, veh
         {field('full_name', 'Full name', { attrs: { autoComplete: 'name' } }, true)}
         {field('email', 'Email address', { attrs: { type: 'email', autoComplete: 'email', inputMode: 'email' } }, true)}
         {field('phone', 'Phone number', { attrs: { type: 'tel', autoComplete: 'tel', inputMode: 'tel' } })}
-        {field('vehicle_interest', 'Vehicle of interest', { attrs: { list: 'cf-vehicles', placeholder: 'e.g. 2022 Mercedes-Benz S-Class' } })}
+        {field('vehicle_interest', 'Vehicle of interest', { attrs: { list: 'cf-vehicles', placeholder: 'e.g. 2022 Toyota Corolla' } })}
       </div>
       <datalist id="cf-vehicles">
         {vehicleOptions.map((o) => <option key={o} value={o} />)}

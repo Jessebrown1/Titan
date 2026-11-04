@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { ImagePlus, Trash2, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { uploadVehicleImage } from '../services/vehicles';
+import { uploadVehicleImage } from '../services/vehiclesAdmin';
 import { img } from '../lib/image';
 
 const MAX_MB = 15;

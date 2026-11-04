@@ -7,7 +7,7 @@ import VehicleCard from '../components/VehicleCard';
 import { CardSkeletons, EmptyState, ErrorState } from '../components/States';
 import { useVehicles } from '../hooks/useVehicles';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
-import { formatPrice, FUEL_TYPES, TRANSMISSIONS } from '../lib/format';
+import { formatPrice, FUEL_TYPES, isForSale, isRentable, TRANSMISSIONS } from '../lib/format';
 
 // Price filter steps scale to the inventory, so they suit any currency.
 function priceSteps(prices) {
@@ -33,11 +33,12 @@ const SORTS = {
 const STATUS_ORDER = { available: 0, reserved: 1, sold: 2 };
 const FILTER_KEYS = ['q', 'make', 'minPrice', 'maxPrice', 'minYear', 'transmission', 'fuel', 'hideSold'];
 
-export default function Vehicles() {
-  useDocumentMeta({
-    title: 'Our Vehicles',
-    description: 'Browse the TITAN MOTORS collection. Search and filter by make, price, year, transmission and fuel type.',
-  });
+export default function Vehicles({ rentOnly = false }) {
+  useDocumentMeta(
+    rentOnly
+      ? { title: 'Rent a Car', description: 'Rent a vehicle from TITAN MOTORS by the day. Choose your dates and send a request; our team confirms availability.' }
+      : { title: 'Our Vehicles', description: 'Browse the TITAN MOTORS collection. Search and filter by make, price, year, transmission and fuel type.' },
+  );
   const { data, loading, error, reload } = useVehicles();
   const [params, setParams] = useSearchParams();
   const [panelOpen, setPanelOpen] = useState(false);
@@ -55,10 +56,17 @@ export default function Vehicles() {
     setParams(next, { replace: true });
   };
 
-  const all = data || [];
+  const listing = rentOnly ? 'rent' : params.get('listing') || '';
+  const all = useMemo(() => {
+    const list = data || [];
+    if (listing === 'rent') return list.filter(isRentable);
+    if (listing === 'sale') return list.filter(isForSale);
+    return list;
+  }, [data, listing]);
   const makes = useMemo(() => [...new Set(all.map((v) => v.make))].sort(), [all]);
   const years = useMemo(() => [...new Set(all.map((v) => v.year))].sort((a, b) => b - a), [all]);
-  const PRICE_STEPS = useMemo(() => priceSteps(all.map((v) => Number(v.price)).filter((n) => n > 0)), [all]);
+  const priceOf = (v) => (listing === 'rent' ? v.rent_per_day : v.price);
+  const PRICE_STEPS = useMemo(() => priceSteps(all.map((v) => Number(priceOf(v))).filter((n) => n > 0)), [all, listing]);
 
   const results = useMemo(() => {
     const q = get('q').toLowerCase().trim();
@@ -77,8 +85,9 @@ export default function Vehicles() {
           if (!q.split(/\s+/).every((t) => hay.includes(t))) return false;
         }
         if (make && v.make !== make) return false;
-        if (v.price != null && (v.price < minPrice || v.price > maxPrice)) return false;
-        if (v.price == null && (minPrice > 0 || maxPrice !== Infinity)) return false;
+        const amount = priceOf(v);
+        if (amount != null && (amount < minPrice || amount > maxPrice)) return false;
+        if (amount == null && (minPrice > 0 || maxPrice !== Infinity)) return false;
         if (minYear && v.year < minYear) return false;
         if (transmission && v.transmission !== transmission) return false;
         if (fuel && v.fuel_type !== fuel) return false;
@@ -87,7 +96,7 @@ export default function Vehicles() {
       })
       .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || sort.fn(a, b));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [all, params]);
+  }, [all, params, listing]);
 
   const activeCount = FILTER_KEYS.filter((k) => k !== 'q' && get(k)).length;
 
@@ -101,7 +110,7 @@ export default function Vehicles() {
         </select>
       </div>
       <div className="field">
-        <span className="field__label" id="f-price">Price range</span>
+        <span className="field__label" id="f-price">{listing === 'rent' ? 'Daily rate' : 'Price range'}</span>
         <div className="filters__pair" role="group" aria-labelledby="f-price">
           <select aria-label="Minimum price" className="select" value={get('minPrice')} onChange={(e) => set('minPrice', e.target.value)}>
             <option value="">No min</option>
@@ -148,9 +157,15 @@ export default function Vehicles() {
 
   return (
     <>
-      <PageHeader eyebrow="Inventory" title="Our Vehicles" word="COLLECTION">
-        Explore a carefully selected collection of exceptional vehicles.
-      </PageHeader>
+      {rentOnly ? (
+        <PageHeader eyebrow="Rent a car" title="Drive it for a day, a week or a month." word="RENT">
+          Choose a vehicle and your dates, with or without a driver. Our team confirms availability before anything is booked.
+        </PageHeader>
+      ) : (
+        <PageHeader eyebrow="Inventory" title="Our Vehicles" word="COLLECTION">
+          Explore a carefully selected collection of exceptional vehicles.
+        </PageHeader>
+      )}
 
       <section className="inventory" aria-label="Vehicle inventory">
         <div className="container">
@@ -182,6 +197,16 @@ export default function Vehicles() {
               </button>
             </div>
           </div>
+
+          {!rentOnly && (
+            <div className="listing-tabs" role="group" aria-label="Show vehicles">
+              {[['', 'All vehicles'], ['sale', 'For sale'], ['rent', 'For rent']].map(([value, label]) => (
+                <button key={label} type="button" aria-pressed={listing === value} className={listing === value ? 'is-active' : ''} onClick={() => set('listing', value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="inventory__layout">
             <aside className="filters" aria-label="Filters">
@@ -218,7 +243,7 @@ export default function Vehicles() {
               ) : loading ? (
                 <div className="vgrid vgrid--two"><CardSkeletons count={4} /></div>
               ) : all.length === 0 ? (
-                <EmptyState icon={CarFront} title="No vehicles listed yet">
+                <EmptyState icon={CarFront} title={listing === 'rent' ? 'No vehicles available to rent yet' : 'No vehicles listed yet'}>
                   New arrivals are on their way. Please contact us to discuss what you are looking for.
                 </EmptyState>
               ) : results.length === 0 ? (
@@ -230,7 +255,7 @@ export default function Vehicles() {
                 </EmptyState>
               ) : (
                 <div className="vgrid vgrid--two">
-                  {results.map((v, i) => <VehicleCard key={v.id} vehicle={v} index={i} />)}
+                  {results.map((v, i) => <VehicleCard key={v.id} vehicle={v} index={i} mode={listing === 'rent' ? 'rent' : 'all'} />)}
                 </div>
               )}
             </div>

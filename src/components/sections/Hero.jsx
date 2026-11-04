@@ -45,15 +45,15 @@ export default function Hero({ vehicles }) {
       <div className="hero__floor" aria-hidden="true" />
       <div className="container hero__inner">
         <motion.h1 id="hero-title" className="hero__type" style={{ y: typeY, opacity: typeOpacity }} aria-label="Introducing Excellence">
-          <SplitText text="Introducing" className="hero__intro" by="word" inView={false} delay={0.1} duration={1} />
+          <SplitText text="Introducing" className="hero__intro" by="word" inView={false} delay={0.02} duration={0.55} />
           <motion.span className="hero__word-wrap" style={{ x: wordX }}>
-            <SplitText text="Excellence" className="hero__word" by="char" inView={false} delay={0.25} stagger={0.045} duration={1.1} />
+            <SplitText text="Excellence" className="hero__word" by="char" inView={false} delay={0.06} stagger={0.022} duration={0.65} />
             <motion.span
               className="hero__dot"
               aria-hidden="true"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 1.05, duration: 0.6, ease: EASE }}
+              transition={{ delay: 0.4, duration: 0.4, ease: EASE }}
             >
               .
             </motion.span>
@@ -64,16 +64,19 @@ export default function Hero({ vehicles }) {
           <motion.div className="hero__car-inner" style={{ x: carX, y: carTilt }}>
             <motion.div
               className="hero__car-stage"
-              initial={{ opacity: 0, x: '18%', filter: 'blur(14px)' }}
-              animate={{ opacity: 1, x: '0%', filter: 'blur(0px)' }}
-              transition={{ duration: 1.6, delay: 0.5, ease: EASE }}
+              initial={{ opacity: 0, x: '8%' }}
+              animate={{ opacity: 1, x: '0%' }}
+              transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
             >
               <img
                 src="/images/hero-car.webp"
+                srcSet="/images/hero-car-860.webp 860w, /images/hero-car.webp 1600w"
+                sizes="(max-width: 900px) 100vw, 62vw"
                 width="1600"
-                height="699"
-                alt="Gloss black performance coupé photographed in a studio"
+                height="804"
+                alt="Black Lexus RX SUV, front three-quarter view"
                 fetchpriority="high"
+                decoding="async"
               />
               {/* Light sweep across the bodywork, masked to the car's silhouette */}
               <span className="hero__sheen" aria-hidden="true" />
@@ -83,12 +86,12 @@ export default function Hero({ vehicles }) {
 
         <div className="hero__bottom">
           <div className="hero__copy">
-            <SplitText as="h2" text={'Drive beyond\nlimits.'} className="hero__headline" inView={false} delay={0.8} />
+            <SplitText as="h2" text={'Drive beyond\nlimits.'} className="hero__headline" inView={false} delay={0.2} />
             <motion.div
               className="hero__copy-rest"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 1.1, ease: EASE }}
+              transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
             >
               <p className="hero__sub">Discover exceptional vehicles. Experience excellence. Find your next drive.</p>
               <ul className="hero__checks">
@@ -111,12 +114,12 @@ export default function Hero({ vehicles }) {
             className="hero__stats glass"
             initial={{ opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1, delay: 1.25, ease: EASE }}
+            transition={{ duration: 0.5, delay: 0.35, ease: EASE }}
           >
             {stats.map((s, i) => (
               <div key={s.label} className="hero__stat">
                 <dt>{s.label}</dt>
-                <dd><CountUp value={s.value} delay={1.3 + i * 0.1} /></dd>
+                <dd><CountUp value={s.value} delay={0.4 + i * 0.05} /></dd>
               </div>
             ))}
           </motion.dl>

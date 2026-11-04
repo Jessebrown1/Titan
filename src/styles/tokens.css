@@ -61,8 +61,8 @@
   --nav-glass-scrolled: rgba(255, 255, 255, 0.74);
 
   /* Type */
-  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora Variable', 'Inter Variable', system-ui, sans-serif;
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Layout */
   --container: 1320px;

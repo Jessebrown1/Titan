@@ -1,6 +1,7 @@
 import Hero from '../components/sections/Hero';
 import Collection from '../components/sections/Collection';
 import Marquee from '../components/sections/Marquee';
+import RentBand from '../components/sections/RentBand';
 import About from '../components/sections/About';
 import WhyChoose from '../components/sections/WhyChoose';
 import ContactSection from '../components/sections/ContactSection';
@@ -15,6 +16,7 @@ export default function Home() {
       <Hero vehicles={vehicles} />
       <Marquee vehicles={vehicles} />
       <Collection vehicles={vehicles} loading={loading} error={error} onRetry={reload} />
+      <RentBand vehicles={vehicles} />
       <About />
       <WhyChoose />
       <ContactSection vehicles={vehicles} />

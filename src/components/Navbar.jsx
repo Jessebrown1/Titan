@@ -11,6 +11,7 @@ import { links, site } from '../config/site';
 export const NAV_ITEMS = [
   { to: '/', label: 'Home', end: true },
   { to: '/vehicles', label: 'Our Vehicles' },
+  { to: '/rent', label: 'Rent a Car' },
   { to: '/about', label: 'About Us' },
   { to: '/contact', label: 'Contact' },
 ];

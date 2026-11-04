@@ -3,7 +3,7 @@ export function img(url, width = 1200) {
   if (!url) return '';
   if (url.includes('images.unsplash.com')) {
     const base = url.split('?')[0];
-    return `${base}?auto=format&fit=crop&w=${width}&q=78`;
+    return `${base}?auto=format&fit=crop&w=${width}&q=70`;
   }
   return url;
 }

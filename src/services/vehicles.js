@@ -1,91 +1,49 @@
-import { supabase, isSupabaseConfigured, VEHICLE_BUCKET } from '../lib/supabase';
+import { isSupabaseConfigured, rest } from '../lib/backend';
 import { demoVehicles } from '../data/demoVehicles';
-import { compressImage } from '../lib/image';
 
-const TABLE = 'vehicles';
+// Stale-while-revalidate inventory: pages render instantly from the last known
+// list (memory, then localStorage) while a fresh copy is fetched in the background.
+const KEY = 'titan-vehicles-v2';
+const FRESH_MS = 15000;
 
-const requireBackend = () => {
-  if (!isSupabaseConfigured) {
-    throw new Error('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env.');
+let list = null;
+let fetchedAt = 0;
+let inFlight = null;
+
+function readStored() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY));
+  } catch {
+    return null;
   }
-};
-
-export async function listVehicles({ featuredOnly = false } = {}) {
-  if (!isSupabaseConfigured) {
-    const list = featuredOnly ? demoVehicles.filter((v) => v.featured) : demoVehicles;
-    return structuredClone(list);
-  }
-  let q = supabase.from(TABLE).select('*').order('created_at', { ascending: false });
-  if (featuredOnly) q = q.eq('featured', true);
-  const { data, error } = await q;
-  if (error) throw error;
-  return data;
 }
 
-export async function getVehicle(id) {
-  if (!isSupabaseConfigured) {
-    return structuredClone(demoVehicles.find((v) => v.id === id) || null);
-  }
-  const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).maybeSingle();
-  if (error) {
-    // Malformed UUIDs from hand-typed URLs are simply "not found".
-    if (error.code === '22P02') return null;
-    throw error;
-  }
-  return data;
+export function peekVehicles() {
+  if (!isSupabaseConfigured) return demoVehicles;
+  if (!list) list = readStored();
+  return list;
 }
 
-const FIELDS = [
-  'make', 'model', 'year', 'price', 'mileage', 'transmission', 'fuel_type', 'engine',
-  'colour', 'description', 'main_image', 'images', 'status', 'featured',
-];
-const pick = (v) => Object.fromEntries(FIELDS.filter((k) => k in v).map((k) => [k, v[k]]));
-
-export async function createVehicle(values) {
-  requireBackend();
-  const { data, error } = await supabase.from(TABLE).insert(pick(values)).select().single();
-  if (error) throw error;
-  return data;
+export function refreshVehicles({ force = false } = {}) {
+  if (!isSupabaseConfigured) return Promise.resolve(demoVehicles);
+  if (inFlight) return inFlight;
+  if (!force && list && Date.now() - fetchedAt < FRESH_MS) return Promise.resolve(list);
+  inFlight = rest('vehicles?select=*&order=created_at.desc')
+    .then((data) => {
+      list = data;
+      fetchedAt = Date.now();
+      try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* storage full or blocked */ }
+      return data;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
+  return inFlight;
 }
 
-export async function updateVehicle(id, values) {
-  requireBackend();
-  const { data, error } = await supabase.from(TABLE).update(pick(values)).eq('id', id).select().single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteVehicle(vehicle) {
-  requireBackend();
-  const { error } = await supabase.from(TABLE).delete().eq('id', vehicle.id);
-  if (error) throw error;
-  // Best-effort clean-up of photos stored in our bucket.
-  const paths = [vehicle.main_image, ...(vehicle.images || [])]
-    .map(storagePathFromUrl)
-    .filter(Boolean);
-  if (paths.length) await supabase.storage.from(VEHICLE_BUCKET).remove(paths);
-}
-
-export async function uploadVehicleImage(file) {
-  requireBackend();
-  const compressed = await compressImage(file);
-  const ext = compressed.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const path = `vehicles/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from(VEHICLE_BUCKET)
-    .upload(path, compressed, { cacheControl: '31536000', contentType: compressed.type, upsert: false });
-  if (error) throw error;
-  return supabase.storage.from(VEHICLE_BUCKET).getPublicUrl(path).data.publicUrl;
-}
-
-export async function removeVehicleImage(url) {
-  const path = storagePathFromUrl(url);
-  if (!path || !isSupabaseConfigured) return;
-  await supabase.storage.from(VEHICLE_BUCKET).remove([path]);
-}
-
-function storagePathFromUrl(url) {
-  const marker = `/storage/v1/object/public/${VEHICLE_BUCKET}/`;
-  if (!url || !url.includes(marker)) return null;
-  return decodeURIComponent(url.split(marker)[1].split('?')[0]);
+// Called after admin edits so this browser doesn't show the old copy.
+export function invalidateVehicles() {
+  list = null;
+  fetchedAt = 0;
+  try { localStorage.removeItem(KEY); } catch { /* storage blocked */ }
 }

@@ -113,6 +113,46 @@ drop policy if exists "Admins delete enquiries" on public.enquiries;
 create policy "Admins delete enquiries" on public.enquiries
   for delete to authenticated using (public.is_admin());
 
+-- ─── Rentals ───────────────────────────────────────────────────────
+-- A vehicle can be for sale, for rent, or both. Rental requests live in
+-- enquiries (type = 'rental'); nothing is paid online.
+alter table public.vehicles add column if not exists for_sale boolean not null default true;
+alter table public.vehicles add column if not exists for_rent boolean not null default false;
+alter table public.vehicles add column if not exists rent_per_day numeric(12, 2) check (rent_per_day >= 0);
+
+alter table public.enquiries add column if not exists type text not null default 'sale';
+alter table public.enquiries add column if not exists rent_start date;
+alter table public.enquiries add column if not exists rent_end date;
+alter table public.enquiries add column if not exists with_driver boolean not null default false;
+
+alter table public.enquiries drop constraint if exists enquiries_type_check;
+alter table public.enquiries add constraint enquiries_type_check check (type in ('sale', 'rental'));
+alter table public.enquiries drop constraint if exists enquiries_status_check;
+alter table public.enquiries add constraint enquiries_status_check
+  check (status in ('new', 'contacted', 'resolved', 'confirmed', 'declined'));
+alter table public.enquiries drop constraint if exists enquiries_rental_dates_check;
+alter table public.enquiries add constraint enquiries_rental_dates_check
+  check (type <> 'rental' or (rent_start is not null and rent_end is not null and rent_end >= rent_start));
+
+create index if not exists enquiries_rental_idx on public.enquiries (vehicle_id, rent_start) where type = 'rental';
+
+-- Dates already taken for a car. Exposes date ranges only, never customer details.
+create or replace function public.vehicle_booked_dates(vehicle uuid)
+returns table (rent_start date, rent_end date)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select e.rent_start, e.rent_end
+  from public.enquiries e
+  where e.vehicle_id = vehicle and e.type = 'rental' and e.status = 'confirmed'
+    and e.rent_end >= current_date
+  order by e.rent_start;
+$$;
+revoke all on function public.vehicle_booked_dates(uuid) from public;
+grant execute on function public.vehicle_booked_dates(uuid) to anon, authenticated;
+
 -- ─── Table privileges ──────────────────────────────────────────────
 -- Explicit grants so the API works even when "automatically expose new
 -- tables" is off. Row Level Security above still decides which rows.

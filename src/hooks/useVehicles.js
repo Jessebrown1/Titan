@@ -1,28 +1,37 @@
-import { useEffect } from 'react';
-import { useAsync } from './useAsync';
-import { getVehicle, listVehicles } from '../services/vehicles';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useCallback, useEffect, useState } from 'react';
+import { peekVehicles, refreshVehicles } from '../services/vehicles';
 
-// Live inventory: refetches when the vehicles table changes (if Realtime is enabled).
-function useRealtimeReload(reload) {
+// Renders from cache immediately, then refreshes in the background and on tab focus.
+export function useVehicles() {
+  const [data, setData] = useState(peekVehicles);
+  const [loading, setLoading] = useState(() => !peekVehicles());
+  const [error, setError] = useState(null);
+
+  const reload = useCallback(async (options) => {
+    try {
+      const fresh = await refreshVehicles(options);
+      setData(fresh);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (!isSupabaseConfigured) return undefined;
-    const channel = supabase
-      .channel(`vehicles-${Math.random().toString(36).slice(2)}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, () => reload())
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    reload();
+    const onFocus = () => reload();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [reload]);
-}
 
-export function useVehicles(options = {}) {
-  const result = useAsync(() => listVehicles(options), [options.featuredOnly]);
-  useRealtimeReload(result.reload);
-  return result;
+  // Cached cars stay on screen if a background refresh fails.
+  return { data, loading, error: data ? null : error, reload: () => reload({ force: true }) };
 }
 
 export function useVehicle(id) {
-  return useAsync(() => getVehicle(id), [id]);
+  const { data, loading, error, reload } = useVehicles();
+  return { data: data?.find((v) => v.id === id) ?? null, all: data, loading, error, reload };
 }

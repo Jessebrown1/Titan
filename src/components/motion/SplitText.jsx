@@ -13,12 +13,12 @@ export default function SplitText({
   className,
   delay = 0,
   stagger,
-  duration = 0.9,
+  duration = 0.6,
   inView = true,
   id,
 }) {
   const Tag = motion[as];
-  const step = stagger ?? (by === 'char' ? 0.035 : 0.07);
+  const step = stagger ?? (by === 'char' ? 0.025 : 0.04);
   const lines = text.split('\n');
   let i = 0;
 

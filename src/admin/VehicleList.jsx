@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Star, Search, ExternalLink } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
-import { listVehicles, updateVehicle, deleteVehicle } from '../services/vehicles';
+import { listVehicles, updateVehicle, deleteVehicle } from '../services/vehiclesAdmin';
 import { Loading, ErrorState, EmptyState } from '../components/States';
-import { formatMileage, formatPrice, STATUS_LABEL } from '../lib/format';
+import { formatMileage, formatPrice, formatRate, isForSale, STATUS_LABEL } from '../lib/format';
 import { img } from '../lib/image';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
@@ -121,7 +121,10 @@ export default function VehicleList() {
                       </div>
                     </div>
                   </td>
-                  <td data-label="Price">{formatPrice(v.price)}</td>
+                  <td data-label="Price">
+                    {isForSale(v) ? formatPrice(v.price) : <span className="muted">Rent only</span>}
+                    {v.for_rent && v.rent_per_day > 0 && <small className="vrow__rate">{formatRate(v.rent_per_day)}</small>}
+                  </td>
                   <td data-label="Mileage">{formatMileage(v.mileage)}</td>
                   <td data-label="Status" className="td--status">
                     <label className="sr-only" htmlFor={`st-${v.id}`}>Status for {v.make} {v.model}</label>

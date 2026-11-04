@@ -1,21 +1,24 @@
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MessageCircle, Phone, Mail, CarFront, Calendar, Gauge, Cog, Fuel, Zap, Palette } from 'lucide-react';
 import Gallery from '../components/Gallery';
 import VehicleCard from '../components/VehicleCard';
 import Reveal from '../components/Reveal';
 import { Loading, EmptyState, ErrorState } from '../components/States';
-import { useVehicle, useVehicles } from '../hooks/useVehicles';
+import { useVehicle } from '../hooks/useVehicles';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
-import { formatMileage, formatPrice, STATUS_LABEL, vehicleTitle } from '../lib/format';
+import { formatMileage, formatPrice, formatRate, isForSale, isRentable, STATUS_LABEL, vehicleTitle } from '../lib/format';
+import RentalRequest from '../components/RentalRequest';
 import { img } from '../lib/image';
 import { links, site } from '../config/site';
 
 export default function VehicleDetail() {
   const { id } = useParams();
-  const { data: v, loading, error, reload } = useVehicle(id);
-  const { data: all } = useVehicles();
+  const { data: v, all, loading, error, reload } = useVehicle(id);
   const title = vehicleTitle(v);
+  const [params] = useSearchParams();
+  const [picked, setPicked] = useState(params.get('mode') === 'rent' ? 'rent' : null);
 
   useDocumentMeta({
     title: v ? title : loading ? 'Vehicle' : 'Vehicle not found',
@@ -40,6 +43,9 @@ export default function VehicleDetail() {
   }
 
   const images = [v.main_image, ...(v.images || [])].filter(Boolean);
+  const rentable = isRentable(v);
+  const sale = isForSale(v);
+  const mode = rentable && (picked === 'rent' || !sale) ? 'rent' : 'buy';
   const message = `Hello ${site.name}, I am interested in the ${title}. Please provide more information.`;
   const whatsapp = links.whatsapp(message);
   const mail = links.mail(`Enquiry: ${title}`, message);
@@ -77,7 +83,16 @@ export default function VehicleDetail() {
             <p className="detail__make">{v.make}</p>
             <h1 className="detail__title">{v.model}</h1>
             <p className="detail__year">{v.year}{v.colour ? ` · ${v.colour}` : ''}</p>
-            <p className="detail__price">{formatPrice(v.price)}</p>
+            {rentable && sale && (
+              <div className="listing-tabs detail__modes" role="group" aria-label="Buy or rent">
+                {[['buy', 'Buy'], ['rent', 'Rent']].map(([value, label]) => (
+                  <button key={value} type="button" aria-pressed={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setPicked(value)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="detail__price">{mode === 'rent' ? formatRate(v.rent_per_day) : formatPrice(v.price)}</p>
 
             <dl className="specs glass">
               {specs.map(({ icon: Icon, label, value }) => (
@@ -88,6 +103,7 @@ export default function VehicleDetail() {
               ))}
             </dl>
 
+            {mode === 'rent' ? <RentalRequest vehicle={v} /> : (
             <div className="detail__actions">
               {v.status === 'sold' ? (
                 <p className="notice">This vehicle has been sold. Contact us and we will help you find something similar.</p>
@@ -115,6 +131,7 @@ export default function VehicleDetail() {
                 )}
               </div>
             </div>
+            )}
           </motion.aside>
         </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import ImageManager from './ImageManager';
-import { createVehicle, getVehicle, updateVehicle, removeVehicleImage } from '../services/vehicles';
+import { createVehicle, getVehicle, updateVehicle, removeVehicleImage } from '../services/vehiclesAdmin';
 import { Loading, ErrorState } from '../components/States';
 import { FUEL_TYPES, TRANSMISSIONS, STATUS_LABEL } from '../lib/format';
 import { site } from '../config/site';
@@ -11,7 +11,7 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta';
 const EMPTY = {
   make: '', model: '', year: String(new Date().getFullYear()), price: '', mileage: '',
   transmission: 'Automatic', fuel_type: 'Petrol', engine: '', colour: '', description: '',
-  status: 'available', featured: false,
+  status: 'available', featured: false, for_sale: true, for_rent: false, rent_per_day: '',
 };
 const MAX_YEAR = new Date().getFullYear() + 1;
 
@@ -23,6 +23,8 @@ function validate(v, images) {
   if (!Number.isInteger(y) || y < 1900 || y > MAX_YEAR) e.year = `Enter a year between 1900 and ${MAX_YEAR}.`;
   if (v.price !== '' && (Number.isNaN(Number(v.price)) || Number(v.price) < 0)) e.price = 'Enter a valid price, or leave blank for "Price on request".';
   if (v.mileage !== '' && (!Number.isInteger(Number(v.mileage)) || Number(v.mileage) < 0)) e.mileage = 'Enter a whole number.';
+  if (!v.for_sale && !v.for_rent) e.listing = 'List this vehicle for sale, for rent, or both.';
+  if (v.for_rent && !(Number(v.rent_per_day) > 0)) e.rent_per_day = 'Enter the daily rental rate.';
   if (!images.length) e.images = 'Add at least one photograph.';
   return e;
 }
@@ -57,6 +59,7 @@ export default function VehicleEditor() {
           year: String(v.year ?? ''),
           price: v.price == null ? '' : String(v.price),
           mileage: v.mileage == null ? '' : String(v.mileage),
+          rent_per_day: v.rent_per_day == null ? '' : String(v.rent_per_day),
         });
         setImages([v.main_image, ...(v.images || [])].filter(Boolean));
       })
@@ -92,6 +95,7 @@ export default function VehicleEditor() {
       year: Number(values.year),
       price: values.price === '' ? null : Number(values.price),
       mileage: values.mileage === '' ? null : Number(values.mileage),
+      rent_per_day: values.rent_per_day === '' ? null : Number(values.rent_per_day),
       main_image: images[0],
       images: images.slice(1),
     };
@@ -154,15 +158,15 @@ export default function VehicleEditor() {
         <section className="panel editor__main">
           <h2 className="panel__title">Vehicle details</h2>
           <div className="form-grid">
-            {input('make', 'Make', { placeholder: 'e.g. Mercedes-Benz', autoComplete: 'off' }, true)}
-            {input('model', 'Model', { placeholder: 'e.g. GLE 450', autoComplete: 'off' }, true)}
+            {input('make', 'Make', { placeholder: 'e.g. Toyota', autoComplete: 'off' }, true)}
+            {input('model', 'Model', { placeholder: 'e.g. Land Cruiser Prado', autoComplete: 'off' }, true)}
             {input('year', 'Year', { type: 'number', min: 1900, max: MAX_YEAR, inputMode: 'numeric' }, true)}
             {input('price', `Price (${site.currency})`, { type: 'number', min: 0, step: 1, inputMode: 'numeric', placeholder: 'Leave blank for "Price on request"' })}
             {input('mileage', `Mileage (${site.distanceUnit})`, { type: 'number', min: 0, step: 1, inputMode: 'numeric' })}
-            {input('colour', 'Colour', { placeholder: 'e.g. Obsidian Black' })}
+            {input('colour', 'Colour', { placeholder: 'e.g. Pearl White' })}
             {select('transmission', 'Transmission', TRANSMISSIONS.map((t) => [t, t]))}
             {select('fuel_type', 'Fuel type', FUEL_TYPES.map((t) => [t, t]))}
-            <div className="form-grid__full">{input('engine', 'Engine', { placeholder: 'e.g. 3.0L inline-6 turbo' })}</div>
+            <div className="form-grid__full">{input('engine', 'Engine', { placeholder: 'e.g. 2.8L turbo diesel' })}</div>
             <div className="field form-grid__full">
               <label className="field__label" htmlFor="ve-description">Description</label>
               <textarea id="ve-description" className="textarea" rows={6} value={values.description} onChange={set('description')} maxLength={4000} />
@@ -177,6 +181,15 @@ export default function VehicleEditor() {
             <label className="checkbox" style={{ marginTop: 16 }}>
               <input type="checkbox" checked={values.featured} onChange={set('featured')} /> Feature on homepage
             </label>
+          </section>
+          <section className="panel">
+            <h2 className="panel__title">Sale and rental</h2>
+            <div className="listing-options">
+              <label className="checkbox"><input type="checkbox" checked={values.for_sale} onChange={set('for_sale')} /> For sale</label>
+              <label className="checkbox"><input type="checkbox" checked={values.for_rent} onChange={set('for_rent')} /> For rent</label>
+            </div>
+            {errors.listing && <span className="field__error">{errors.listing}</span>}
+            {values.for_rent && input('rent_per_day', `Daily rate (${site.currency})`, { type: 'number', min: 0, step: 1, inputMode: 'numeric' }, true)}
           </section>
           <section className="panel">
             <h2 className="panel__title">Photographs<span className="req">*</span></h2>

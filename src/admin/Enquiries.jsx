@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mail, Phone, MessageCircle, Trash2, Inbox } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
-import { listEnquiries, updateEnquiryStatus, deleteEnquiry, ENQUIRY_STATUSES } from '../services/enquiries';
+import { listEnquiries, updateEnquiryStatus, deleteEnquiry, ENQUIRY_STATUSES } from '../services/enquiriesAdmin';
 import { Loading, ErrorState, EmptyState } from '../components/States';
 import { formatDate } from '../lib/format';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';

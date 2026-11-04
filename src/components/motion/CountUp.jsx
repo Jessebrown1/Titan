@@ -3,7 +3,7 @@ import { animate, useInView } from 'framer-motion';
 import { EASE, prefersReducedMotion } from '../../lib/motion';
 
 // Counts up to a number once visible; non-numeric values render as-is.
-export default function CountUp({ value, duration = 1.6, delay = 0 }) {
+export default function CountUp({ value, duration = 0.9, delay = 0 }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
   const numeric = typeof value === 'number' && Number.isFinite(value);

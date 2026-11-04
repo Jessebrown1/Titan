@@ -11,14 +11,14 @@ export default function PageHeader({ eyebrow, title, children, word }) {
           aria-hidden="true"
           initial={{ opacity: 0, x: 80 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
           {word}
         </motion.span>
       )}
       <div className="container">
         <Reveal><span className="eyebrow">{eyebrow}</span></Reveal>
-        <SplitText as="h1" className="display-xl" text={title} inView={false} delay={0.1} />
+        <SplitText as="h1" className="display-xl" text={title} inView={false} delay={0.03} />
         {children && <Reveal delay={0.1}><p className="lead">{children}</p></Reveal>}
       </div>
     </header>

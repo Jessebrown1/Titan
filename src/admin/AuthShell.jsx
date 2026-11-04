@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { EASE } from '../lib/motion';
+import ThemeToggle from '../components/ThemeToggle';
 
 const BG = 'https://images.unsplash.com/photo-1653407497540-26207a2408d7';
 const bg = (w) => `${BG}?auto=format&fit=crop&w=${w}&q=80`;
@@ -20,7 +21,7 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
         fetchpriority="high"
         initial={{ scale: 1.12, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 2.4, ease: EASE }}
+        transition={{ duration: 1.1, ease: EASE }}
       />
       <div className="login__shade" aria-hidden="true" />
 
@@ -29,7 +30,10 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
           <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 5h22v4.2h-8.6V24h-4.8V9.2H3z" fill="currentColor" /></svg>
           <span>TITAN<em>MOTORS</em></span>
         </Link>
-        <Link to="/" className="login__back"><ArrowLeft aria-hidden="true" /> <span>Back to website</span></Link>
+        <div className="login__actions">
+          <ThemeToggle className="login__icon-btn" />
+          <Link to="/" className="login__back"><ArrowLeft aria-hidden="true" /> <span>Back to website</span></Link>
+        </div>
       </header>
 
       <div className="login__layout">
@@ -37,7 +41,7 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
           className="login__story"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.1, delay: 0.3, ease: EASE }}
+          transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
         >
           <span className="login__eyebrow">{eyebrow}</span>
           <h1 className="login__headline">The showroom,<br />behind the scenes.</h1>
@@ -48,7 +52,7 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
           className="login__card"
           initial={{ opacity: 0, y: 40, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.45, ease: EASE }}
+          transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
         >
           {children}
         </motion.div>

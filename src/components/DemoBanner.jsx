@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/backend';
 
 // Shown while the site runs on bundled sample data, so nobody mistakes it for live stock.
 export default function DemoBanner() {

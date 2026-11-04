@@ -9,7 +9,7 @@ export const getLenis = () => lenis;
 export function useSmoothScroll() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
-    lenis = new Lenis({ duration: 1.15, easing: (t) => 1 - Math.pow(1 - t, 4), anchors: { offset: -80 } });
+    lenis = new Lenis({ lerp: 0.18, anchors: { offset: -80 } });
     let frame;
     const raf = (time) => {
       lenis.raf(time);

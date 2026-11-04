@@ -1,14 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { isSupabaseConfigured, SUPABASE_URL, SUPABASE_KEY } from './backend';
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-export const isSupabaseConfigured = Boolean(url && anonKey);
-
-// Only the public anon key is used in the browser. All write access is
+// Admin only. Only the public key is used in the browser; all write access is
 // enforced server-side by Row Level Security (see supabase/schema.sql).
 export const supabase = isSupabaseConfigured
-  ? createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+  ? createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } })
   : null;
 
+export { isSupabaseConfigured };
 export const VEHICLE_BUCKET = 'vehicle-images';

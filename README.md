@@ -3,7 +3,8 @@
 Premium showroom website and inventory dashboard for TITAN MOTORS, built with **React + plain CSS**.
 
 - **Public site:** home (hero, collection, about, why choose us, contact), vehicle inventory with search, filters and sorting, vehicle detail pages with photo gallery and WhatsApp / phone / email enquiry, About and Contact pages.
-- **Admin dashboard (`/admin`):** secure sign-in, overview stats, add / edit / delete vehicles, photo upload and ordering, availability and featured toggles, enquiry inbox with New / Contacted / Resolved status.
+- **Rentals:** a Rent a Car page, daily rates, date-based rental requests with live estimates and double-booking protection. No online payment.
+- **Admin dashboard (`/admin`):** secure sign-in, live overview with charts and a to-do list, add / edit / delete vehicles, photo upload and ordering, availability and featured toggles, rental bookings, and an enquiry inbox.
 - **Backend:** Supabase (Postgres + Auth + Storage) with Row Level Security.
 
 | Stack | |
@@ -12,7 +13,7 @@ Premium showroom website and inventory dashboard for TITAN MOTORS, built with **
 | Motion | Framer Motion + Lenis smooth scrolling (both respect the "reduce motion" setting) |
 | Themes | Light + dark, follows the device setting, toggle in the navbar |
 | Icons | Lucide React |
-| Data | Supabase JS v2 |
+| Data | Supabase JS v2 (admin only); the public site uses a small `fetch` helper with caching |
 | Build | Vite 5 |
 
 ---
@@ -26,7 +27,7 @@ npm run dev
 
 Open http://localhost:5173.
 
-With no `.env` file the site runs in **demo mode**: it shows 8 sample vehicles (clearly tagged *Demo*), the contact form tells visitors it isn't connected yet and offers email/WhatsApp instead (once those are configured), and `/admin` shows setup instructions. Nothing pretends to be connected.
+With no `.env` file the site runs in **demo mode**: it shows 10 sample vehicles popular in Ghana (clearly tagged *Demo*), the contact form tells visitors it isn't connected yet and offers email/WhatsApp instead (once those are configured), and `/admin` shows setup instructions. Nothing pretends to be connected.
 
 ## 2. Connect Supabase (database, login, photo storage)
 
@@ -96,10 +97,16 @@ If WhatsApp isn't set, "Enquire about this vehicle" opens the contact form pre-f
 - **Availability** — Available / Reserved / Sold, changeable inline from the vehicle list. Sold vehicles stay visible (greyed, sorted last) unless visitors tick "Hide sold".
 - **Featured** — ★ in the list. Featured vehicles lead the homepage collection; it tops up with the newest available vehicles to show up to six.
 - **Price** — leave blank to show "Price on request".
-- Changes appear on the public site straight away (Realtime refresh).
+- Changes appear on the public site on the next page load or when a visitor returns to the tab. Pages show the last known list instantly and refresh it in the background.
 - Deleting a vehicle also deletes its uploaded photos.
 
-## 5. Enquiries
+## 5. Rentals
+
+Each vehicle can be for sale, for rent, or both (Admin → edit a vehicle → *Sale and rental*). Set a daily rate to list it on **Rent a Car** (`/rent`).
+
+Customers pick dates, choose self-drive or a driver, see an estimate and send a request. **Nothing is paid online.** Requests appear in **Admin → Rentals**, where you confirm, decline or complete them. Confirming blocks those dates for that car on the website, and the admin warns about clashes. Customers see only the blocked dates, never who booked. Driver costs, deposits and rental terms are agreed directly with the customer.
+
+## 6. Enquiries
 
 Contact form submissions are stored in the `enquiries` table and appear under **Admin → Enquiries**, with one-click email / call / WhatsApp reply buttons and a status of New → Contacted → Resolved.
 
@@ -107,7 +114,7 @@ Contact form submissions are stored in the `enquiries` table and appear under **
 
 **Spam:** the form has validation and a hidden honeypot field, and the database enforces length/format limits. For high traffic, add Supabase's CAPTCHA protection or an Edge Function with rate limiting.
 
-## 6. Deploy
+## 7. Deploy
 
 ```bash
 npm run build      # outputs dist/
@@ -117,19 +124,26 @@ npm run build      # outputs dist/
 - **Netlify:** build command `npm run build`, publish directory `dist`, add the env vars. `public/_redirects` handles client-side routes.
 - In Supabase **Authentication → URL Configuration**, set *Site URL* to your live domain.
 
-## 7. Dark mode and animation
+## 8. Dark mode and animation
 
 - **Theme:** follows the visitor's device setting until they press the sun/moon toggle (navbar, mobile menu bar, admin sidebar); their choice is remembered. Switching plays a circular reveal from the button in browsers that support the View Transitions API. Colours live as tokens in `src/styles/tokens.css` — the dark set is under `:root[data-theme='dark']`.
 - **Motion** (`src/components/motion/`): smooth inertia scrolling, letter-by-letter hero headline, cursor parallax and a light sweep across the hero car, counting stats, magnetic buttons, 3D tilt + glare on vehicle cards, clip-path image reveals, a marques marquee and a scroll progress bar. Everything calms down automatically for visitors who enable "reduce motion"; tilt/magnetic/parallax only run on mouse/trackpad devices.
 
-## 8. Replacing demo content
+## 9. Performance
 
-- **Hero image:** `public/images/hero-car.webp` — a transparent cut-out, about 1600px wide, so the car overlaps the giant headline. Swap in your own transparent PNG/WebP with the same name.
+- The Supabase library loads only in `/admin`; visitors get about 120 KB of gzipped JavaScript.
+- Inventory is cached (memory + localStorage) and refreshed in the background, so pages open instantly.
+- Other pages are fetched while the browser is idle. Fonts are self-hosted; the hero has a phone-sized image.
+- `npm run dev` is much slower than the real site because it isn't bundled. To judge speed, use `npm run build` then `npm run preview`.
+
+## 10. Replacing demo content
+
+- **Hero image:** `public/images/hero-car.webp` (1600px) and `hero-car-860.webp` (phones) — transparent cut-outs, so the car overlaps the giant headline. Swap in your own transparent WebPs with the same names; keep the car complete in frame.
 - **Demo vehicles:** delete them in `/admin` (or `delete from public.vehicles where is_demo;`). The bundled list in `src/data/demoVehicles.js` is only used when Supabase isn't configured. After editing it, `npm run seed:generate` rebuilds `supabase/seed.sql`.
 - **About section photos:** `src/components/sections/About.jsx`.
 - **Copy:** each section lives in `src/components/sections/`.
 
-Demo photographs are from [Unsplash](https://unsplash.com) (Unsplash License). The hero car is a cut-out of an Unsplash photo; replace it with your own photography before launch.
+Demo photographs are from [Unsplash](https://unsplash.com) (Unsplash License). Demo prices are illustrative. The hero car is a cut-out of an Unsplash photo; replace it with your own photography before launch.
 
 ## Project structure
 
@@ -145,7 +159,7 @@ src/
   layouts/      PublicLayout
   lib/          supabase client, formatting, image helpers
   pages/        Home, Vehicles, VehicleDetail, About, Contact, NotFound
-  services/     vehicles.js, enquiries.js — all data access
+  services/     vehicles.js, enquiries.js (public); vehiclesAdmin.js, enquiriesAdmin.js (admin only)
   styles/       tokens.css (light + dark), base.css, layout.css, home.css, inventory.css, motion.css, admin.css
 supabase/
   schema.sql    tables, RLS policies, storage bucket

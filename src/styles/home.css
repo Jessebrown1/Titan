@@ -30,13 +30,15 @@
 
 .hero__car {
   position: absolute; z-index: 2; pointer-events: none;
-  width: min(66vw, 1020px);
-  right: calc(var(--gutter) - 2.5vw);
-  top: calc(var(--top) + var(--intro) + var(--word) * 0.36);
+  /* Sized from the space available so the stats panel never covers the wheels */
+  --car-top: calc(var(--top) + var(--intro) + var(--word) * 0.42);
+  width: min(62vw, 980px, max(460px, calc((100svh - var(--car-top) - 136px) * 1.98)));
+  right: var(--gutter);
+  top: var(--car-top);
 }
 .hero__car img { width: 100%; height: auto; filter: var(--hero-car-filter); transition: filter 0.6s var(--ease); }
-.hero__car::after {
-  content: ''; position: absolute; z-index: -1; left: 6%; right: 3%; bottom: 4%; height: 16%;
+.hero__car-stage::after {
+  content: ''; position: absolute; z-index: -1; left: 3%; right: 1%; bottom: -3%; height: 15%;
   background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0) 100%);
   filter: blur(14px);
 }
@@ -68,8 +70,8 @@
   .hero { --word: 15.6vw; --intro: clamp(18px, 4.6vw, 30px); min-height: 0; }
   .hero__inner { display: block; padding-top: calc(var(--nav-h) + 52px); }
   .hero__car {
-    position: relative; right: auto; top: auto; width: 110vw; max-width: none;
-    margin: calc(var(--word) * -0.22) 0 0 -12vw;
+    position: relative; right: auto; top: auto; width: 100%; max-width: none;
+    margin: calc(var(--word) * -0.2) 0 0;
   }
   .hero__bottom { margin-top: 8px; gap: 24px; }
   .hero__copy { max-width: none; }
@@ -161,9 +163,32 @@ a.channels__item:hover { padding-left: 12px; }
 
 /* Tablets: a smaller, fully visible car; stats on one row; buttons size to content */
 @media (min-width: 600px) and (max-width: 900px) {
-  .hero__car { width: 96vw; margin: calc(var(--word) * -0.28) 0 0 -2vw; }
+  .hero__car { width: 88%; margin: calc(var(--word) * -0.2) auto 0; }
   .hero__stats { grid-template-columns: repeat(4, 1fr); }
   .hero__stat:nth-child(3) { border-left: 1px solid rgba(var(--ink-rgb), 0.08); }
   .hero__ctas .magnetic { flex: 0 0 auto; }
   .hero__ctas .btn { width: auto; }
 }
+
+/* ───────── Rent band ───────── */
+.rentband { background: var(--cta-bg); color: #fff; padding: clamp(64px, 9vw, 120px) 0; position: relative; overflow: hidden; }
+.rentband::before { content: ''; position: absolute; right: -10%; top: -30%; width: 60%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(120, 140, 255, 0.18), transparent); pointer-events: none; }
+.rentband__grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
+.rentband__copy { display: grid; gap: 20px; justify-items: start; }
+.rentband .eyebrow, .rentband .lead { color: rgba(255, 255, 255, 0.62); }
+.rentband__steps { list-style: none; padding: 0; margin: 4px 0; display: grid; gap: 14px; }
+.rentband__steps li { display: flex; gap: 14px; align-items: flex-start; }
+.rentband__steps strong { font-weight: 600; font-size: 15px; }
+.rentband__steps p { font-size: 14px; color: rgba(255, 255, 255, 0.58); }
+.rentband__icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: rgba(255, 255, 255, 0.08); }
+.rentband__icon svg { width: 18px; height: 18px; }
+.rentband__cars { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.rentcar { display: flex; align-items: center; gap: 16px; padding: 10px 18px 10px 10px; border-radius: 20px; color: #fff; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.09); transition: background 0.25s, transform 0.3s var(--ease); }
+.rentcar:hover { background: rgba(255, 255, 255, 0.11); transform: translateX(4px); }
+.rentcar img { width: 124px; height: 84px; object-fit: cover; border-radius: 14px; flex: none; }
+.rentcar__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.rentcar__name { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.02em; }
+.rentcar__rate { font-size: 14px; color: rgba(255, 255, 255, 0.65); }
+.rentcar > svg { width: 18px; height: 18px; flex: none; color: rgba(255, 255, 255, 0.5); }
+@media (max-width: 900px) { .rentband__grid { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .rentcar img { width: 92px; height: 68px; } .rentcar__name { font-size: 15px; } }
