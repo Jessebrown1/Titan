@@ -56,7 +56,7 @@
   content: ''; position: absolute; inset: 0 auto 0 0; width: 45%;
   background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.4) 50%, transparent);
   transform: translateX(-120%);
-  animation: hero-sheen 1.5s 0.9s var(--ease) 1 both;
+  animation: hero-sheen 2s 3.2s var(--ease) 1 both;
 }
 @keyframes hero-sheen {
   to { transform: translateX(320%); }

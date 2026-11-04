@@ -4,10 +4,11 @@ import VehicleCard from '../VehicleCard';
 import Reveal from '../Reveal';
 import SplitText from '../motion/SplitText';
 import { CardSkeletons, EmptyState, ErrorState } from '../States';
+import { isForSale } from '../../lib/format';
 
 export default function Collection({ vehicles, loading, error, onRetry }) {
   // Featured first; top up with the newest available vehicles so the row is never sparse.
-  const list = vehicles || [];
+  const list = (vehicles || []).filter(isForSale);
   const featured = list.filter((v) => v.featured && v.status !== 'sold');
   const rest = list.filter((v) => !featured.includes(v) && v.status === 'available');
   const shown = [...featured, ...rest].slice(0, 6);

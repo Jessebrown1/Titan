@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MessageCircle, Phone, Mail, CarFront, Calendar, Gauge, Cog, Fuel, Zap, Palette } from 'lucide-react';
 import Gallery from '../components/Gallery';
@@ -17,8 +16,6 @@ export default function VehicleDetail() {
   const { id } = useParams();
   const { data: v, all, loading, error, reload } = useVehicle(id);
   const title = vehicleTitle(v);
-  const [params] = useSearchParams();
-  const [picked, setPicked] = useState(params.get('mode') === 'rent' ? 'rent' : null);
 
   useDocumentMeta({
     title: v ? title : loading ? 'Vehicle' : 'Vehicle not found',
@@ -43,9 +40,7 @@ export default function VehicleDetail() {
   }
 
   const images = [v.main_image, ...(v.images || [])].filter(Boolean);
-  const rentable = isRentable(v);
-  const sale = isForSale(v);
-  const mode = rentable && (picked === 'rent' || !sale) ? 'rent' : 'buy';
+  const rental = !isForSale(v);
   const message = `Hello ${site.name}, I am interested in the ${title}. Please provide more information.`;
   const whatsapp = links.whatsapp(message);
   const mail = links.mail(`Enquiry: ${title}`, message);
@@ -58,12 +53,12 @@ export default function VehicleDetail() {
     { icon: Zap, label: 'Engine', value: v.engine || '—' },
     { icon: Palette, label: 'Colour', value: v.colour || '—' },
   ];
-  const related = (all || []).filter((o) => o.id !== v.id && o.status !== 'sold').slice(0, 3);
+  const related = (all || []).filter((o) => o.id !== v.id && o.status !== 'sold' && Boolean(o.for_rent) === Boolean(v.for_rent)).slice(0, 3);
 
   return (
     <article className="detail">
       <div className="container">
-        <Link to="/vehicles" className="detail__back"><ArrowLeft aria-hidden="true" /> All vehicles</Link>
+        <Link to={rental ? '/rent' : '/vehicles'} className="detail__back"><ArrowLeft aria-hidden="true" /> {rental ? 'All rental cars' : 'All vehicles'}</Link>
 
         <div className="detail__grid">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
@@ -78,21 +73,11 @@ export default function VehicleDetail() {
           >
             <div className="detail__tags">
               <span className={`badge badge--${v.status}`}>{STATUS_LABEL[v.status]}</span>
-              {v.is_demo && <span className="demo-tag">Demo listing</span>}
             </div>
             <p className="detail__make">{v.make}</p>
             <h1 className="detail__title">{v.model}</h1>
             <p className="detail__year">{v.year}{v.colour ? ` · ${v.colour}` : ''}</p>
-            {rentable && sale && (
-              <div className="listing-tabs detail__modes" role="group" aria-label="Buy or rent">
-                {[['buy', 'Buy'], ['rent', 'Rent']].map(([value, label]) => (
-                  <button key={value} type="button" aria-pressed={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setPicked(value)}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
-            <p className="detail__price">{mode === 'rent' ? formatRate(v.rent_per_day) : formatPrice(v.price)}</p>
+            <p className="detail__price">{rental ? formatRate(v.rent_per_day) : formatPrice(v.price)}</p>
 
             <dl className="specs glass">
               {specs.map(({ icon: Icon, label, value }) => (
@@ -103,7 +88,9 @@ export default function VehicleDetail() {
               ))}
             </dl>
 
-            {mode === 'rent' ? <RentalRequest vehicle={v} /> : (
+            {rental ? (
+              isRentable(v) ? <RentalRequest vehicle={v} /> : <p className="notice">This car isn&rsquo;t available to rent right now.</p>
+            ) : (
             <div className="detail__actions">
               {v.status === 'sold' ? (
                 <p className="notice">This vehicle has been sold. Contact us and we will help you find something similar.</p>
@@ -146,7 +133,7 @@ export default function VehicleDetail() {
           <section className="detail__related" aria-labelledby="related-title">
             <div className="section-head">
               <h2 id="related-title" className="display-md">You may also like</h2>
-              <Link to="/vehicles" className="btn btn--outline btn--sm">View all</Link>
+              <Link to={rental ? '/rent' : '/vehicles'} className="btn btn--outline btn--sm">View all</Link>
             </div>
             <div className="vgrid">
               {related.map((r, i) => <VehicleCard key={r.id} vehicle={r} index={i} />)}

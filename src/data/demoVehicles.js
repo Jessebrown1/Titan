@@ -20,8 +20,6 @@ const vehicle = (id, fields) => ({
 
 export const demoVehicles = [
   vehicle('toyota-land-cruiser', {
-    for_rent: true,
-    rent_per_day: 4500,
     make: 'Toyota',
     model: 'Land Cruiser V8',
     year: 2021,
@@ -37,6 +35,7 @@ export const demoVehicles = [
     created_at: '2026-10-30T10:00:00Z',
   }),
   vehicle('toyota-prado', {
+    for_sale: false,
     for_rent: true,
     rent_per_day: 3500,
     make: 'Toyota',
@@ -50,12 +49,9 @@ export const demoVehicles = [
     description:
       'Comfortable, tough and easy to maintain anywhere in the country. Foreign used, with seven seats, leather interior and strong air conditioning.',
     main_image: u('1670736297573-fde2cbcf1de7'),
-    featured: true,
     created_at: '2026-10-28T10:00:00Z',
   }),
   vehicle('lexus-rx', {
-    for_rent: true,
-    rent_per_day: 2800,
     make: 'Lexus',
     model: 'RX 350 F Sport',
     year: 2019,
@@ -70,8 +66,6 @@ export const demoVehicles = [
     created_at: '2026-10-26T10:00:00Z',
   }),
   vehicle('toyota-hilux', {
-    for_rent: true,
-    rent_per_day: 2500,
     make: 'Toyota',
     model: 'Hilux Double Cab',
     year: 2022,
@@ -84,9 +78,11 @@ export const demoVehicles = [
     description:
       'Built for work and the roads beyond the city. Four-wheel drive, hard-wearing interior and a canopy, ready for business or the farm.',
     main_image: u('1759213281196-6c5e463b3021'),
+    featured: true,
     created_at: '2026-10-24T10:00:00Z',
   }),
   vehicle('toyota-rav4', {
+    for_sale: false,
     for_rent: true,
     rent_per_day: 1800,
     make: 'Toyota',
@@ -117,6 +113,7 @@ export const demoVehicles = [
     created_at: '2026-10-20T10:00:00Z',
   }),
   vehicle('toyota-camry', {
+    for_sale: false,
     for_rent: true,
     rent_per_day: 1400,
     make: 'Toyota',
@@ -132,6 +129,7 @@ export const demoVehicles = [
     created_at: '2026-10-18T10:00:00Z',
   }),
   vehicle('toyota-corolla', {
+    for_sale: false,
     for_rent: true,
     rent_per_day: 1000,
     make: 'Toyota',
@@ -148,6 +146,7 @@ export const demoVehicles = [
     created_at: '2026-10-16T10:00:00Z',
   }),
   vehicle('hyundai-tucson', {
+    for_sale: false,
     for_rent: true,
     rent_per_day: 1200,
     make: 'Hyundai',

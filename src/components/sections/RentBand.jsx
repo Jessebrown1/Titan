@@ -43,7 +43,7 @@ export default function RentBand({ vehicles }) {
         <ul className="rentband__cars">
           {shown.map((v, i) => (
             <Reveal as="li" key={v.id} delay={i * 0.06}>
-              <Link to={`/vehicles/${v.id}?mode=rent`} className="rentcar">
+              <Link to={`/vehicles/${v.id}`} className="rentcar">
                 <img src={img(v.main_image, 520)} alt={`${v.year} ${v.make} ${v.model}`} loading="lazy" decoding="async" />
                 <span className="rentcar__text">
                   <span className="rentcar__name">{v.make} {v.model}</span>

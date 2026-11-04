@@ -56,13 +56,8 @@ export default function Vehicles({ rentOnly = false }) {
     setParams(next, { replace: true });
   };
 
-  const listing = rentOnly ? 'rent' : params.get('listing') || '';
-  const all = useMemo(() => {
-    const list = data || [];
-    if (listing === 'rent') return list.filter(isRentable);
-    if (listing === 'sale') return list.filter(isForSale);
-    return list;
-  }, [data, listing]);
+  const listing = rentOnly ? 'rent' : 'sale';
+  const all = useMemo(() => (data || []).filter(rentOnly ? isRentable : isForSale), [data, rentOnly]);
   const makes = useMemo(() => [...new Set(all.map((v) => v.make))].sort(), [all]);
   const years = useMemo(() => [...new Set(all.map((v) => v.year))].sort((a, b) => b - a), [all]);
   const priceOf = (v) => (listing === 'rent' ? v.rent_per_day : v.price);
@@ -143,10 +138,12 @@ export default function Vehicles({ rentOnly = false }) {
           {FUEL_TYPES.map((t) => <option key={t}>{t}</option>)}
         </select>
       </div>
-      <label className="checkbox">
-        <input type="checkbox" checked={get('hideSold') === '1'} onChange={(e) => set('hideSold', e.target.checked ? '1' : '')} />
-        Hide sold vehicles
-      </label>
+      {!rentOnly && (
+        <label className="checkbox">
+          <input type="checkbox" checked={get('hideSold') === '1'} onChange={(e) => set('hideSold', e.target.checked ? '1' : '')} />
+          Hide sold vehicles
+        </label>
+      )}
       {activeCount > 0 && (
         <button type="button" className="btn btn--ghost btn--sm filters__reset" onClick={reset}>
           <X aria-hidden="true" /> Clear filters
@@ -163,7 +160,7 @@ export default function Vehicles({ rentOnly = false }) {
         </PageHeader>
       ) : (
         <PageHeader eyebrow="Inventory" title="Our Vehicles" word="COLLECTION">
-          Explore a carefully selected collection of exceptional vehicles.
+          Explore our selection of vehicles for sale. Looking to hire instead? See our rental cars.
         </PageHeader>
       )}
 
@@ -197,16 +194,6 @@ export default function Vehicles({ rentOnly = false }) {
               </button>
             </div>
           </div>
-
-          {!rentOnly && (
-            <div className="listing-tabs" role="group" aria-label="Show vehicles">
-              {[['', 'All vehicles'], ['sale', 'For sale'], ['rent', 'For rent']].map(([value, label]) => (
-                <button key={label} type="button" aria-pressed={listing === value} className={listing === value ? 'is-active' : ''} onClick={() => set('listing', value)}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
 
           <div className="inventory__layout">
             <aside className="filters" aria-label="Filters">
@@ -255,7 +242,7 @@ export default function Vehicles({ rentOnly = false }) {
                 </EmptyState>
               ) : (
                 <div className="vgrid vgrid--two">
-                  {results.map((v, i) => <VehicleCard key={v.id} vehicle={v} index={i} mode={listing === 'rent' ? 'rent' : 'all'} />)}
+                  {results.map((v, i) => <VehicleCard key={v.id} vehicle={v} index={i} />)}
                 </div>
               )}
             </div>

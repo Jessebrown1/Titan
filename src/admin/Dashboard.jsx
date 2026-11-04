@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, ArrowUpRight, CalendarCheck, CarFront, CheckCircle2, CircleDollarSign, ExternalLink, ImageOff,
-  Inbox, KeyRound, MessageSquare, Phone, Plus, Sparkles, Tag,
+  Inbox, KeyRound, MessageSquare, Phone, Plus, Tag,
 } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { listVehicles } from '../services/vehiclesAdmin';
@@ -70,7 +70,6 @@ function useOverview(vehicles, messages) {
       newEnquiries.length && { icon: Inbox, text: `${plural(newEnquiries.length, 'new enquiry').replace('enquirys', 'enquiries')} to answer`, to: '/admin/enquiries?status=new', urgent: true },
       vehicles.filter((v) => isForSale(v) && v.price == null).length && { icon: Tag, text: `${plural(vehicles.filter((v) => isForSale(v) && v.price == null).length, 'car')} without a price`, to: '/admin/vehicles' },
       vehicles.filter((v) => !v.main_image).length && { icon: ImageOff, text: `${plural(vehicles.filter((v) => !v.main_image).length, 'car')} without a photo`, to: '/admin/vehicles' },
-      vehicles.filter((v) => v.is_demo).length && { icon: Sparkles, text: `${plural(vehicles.filter((v) => v.is_demo).length, 'demo listing')} to replace with real stock`, to: '/admin/vehicles' },
       !hasAnyContact && { icon: Phone, text: 'Add your phone, email and address to the website', hint: 'Set these in .env' },
     ].filter(Boolean);
 
@@ -108,7 +107,7 @@ export default function Dashboard() {
   const weekDelta = o.week - o.lastWeek;
   const kpis = [
     { label: 'Stock for sale', value: formatCompact(o.stockValue), note: `${plural(o.available.filter(isForSale).length, 'car')} available`, icon: CircleDollarSign, to: '/admin/vehicles?status=available' },
-    { label: 'Rental fleet', value: o.fleet.length, note: `of ${plural(vehicles.data.length, 'car')} in stock`, icon: KeyRound, to: '/admin/rentals' },
+    { label: 'Rental fleet', value: o.fleet.length, note: `${plural(o.fleet.filter((v) => v.status === 'available').length, 'car')} free to book`, icon: KeyRound, to: '/admin/rentals' },
     { label: 'Rentals booked', value: formatCompact(o.booked), note: `${plural(o.upcoming.length, 'upcoming booking')}`, icon: CalendarCheck, to: '/admin/rentals?status=confirmed' },
     { label: 'Messages this week', value: o.week, note: weekDelta === 0 ? 'Same as last week' : `${Math.abs(weekDelta)} ${weekDelta > 0 ? 'more' : 'fewer'} than last week`, icon: MessageSquare, to: '/admin/enquiries' },
   ];

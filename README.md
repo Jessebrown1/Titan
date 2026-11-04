@@ -27,7 +27,7 @@ npm run dev
 
 Open http://localhost:5173.
 
-With no `.env` file the site runs in **demo mode**: it shows 10 sample vehicles popular in Ghana (clearly tagged *Demo*), the contact form tells visitors it isn't connected yet and offers email/WhatsApp instead (once those are configured), and `/admin` shows setup instructions. Nothing pretends to be connected.
+With no `.env` file the site runs in **demo mode**: it shows 10 sample vehicles popular in Ghana, the contact form tells visitors it isn't connected yet and offers email/WhatsApp instead (once those are configured), and `/admin` shows setup instructions. Nothing pretends to be connected.
 
 ## 2. Connect Supabase (database, login, photo storage)
 
@@ -102,7 +102,7 @@ If WhatsApp isn't set, "Enquire about this vehicle" opens the contact form pre-f
 
 ## 5. Rentals
 
-Each vehicle can be for sale, for rent, or both (Admin → edit a vehicle → *Sale and rental*). Set a daily rate to list it on **Rent a Car** (`/rent`).
+Each vehicle is either for sale or for rent, never both (Admin → edit a vehicle → *Listing*). Sale cars appear on **Our Vehicles** (`/vehicles`) and the homepage collection; rental cars appear only on **Rent a Car** (`/rent`) and need a daily rate.
 
 Customers pick dates, choose self-drive or a driver, see an estimate and send a request. **Nothing is paid online.** Requests appear in **Admin → Rentals**, where you confirm, decline or complete them. Confirming blocks those dates for that car on the website, and the admin warns about clashes. Customers see only the blocked dates, never who booked. Driver costs, deposits and rental terms are agreed directly with the customer.
 
@@ -139,7 +139,7 @@ npm run build      # outputs dist/
 ## 10. Replacing demo content
 
 - **Hero image:** `public/images/hero-car.webp` (1600px) and `hero-car-860.webp` (phones) — transparent cut-outs, so the car overlaps the giant headline. Swap in your own transparent WebPs with the same names; keep the car complete in frame.
-- **Demo vehicles:** delete them in `/admin` (or `delete from public.vehicles where is_demo;`). The bundled list in `src/data/demoVehicles.js` is only used when Supabase isn't configured. After editing it, `npm run seed:generate` rebuilds `supabase/seed.sql`.
+- **Sample vehicles:** the listings no longer show a Demo label on the site, so replace them before launch. Delete them in `/admin` (or `delete from public.vehicles where is_demo;`). The bundled list in `src/data/demoVehicles.js` is only used when Supabase isn't configured. After editing it, `npm run seed:generate` rebuilds `supabase/seed.sql`.
 - **About section photos:** `src/components/sections/About.jsx`.
 - **Copy:** each section lives in `src/components/sections/`.
 

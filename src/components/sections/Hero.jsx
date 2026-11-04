@@ -45,15 +45,15 @@ export default function Hero({ vehicles }) {
       <div className="hero__floor" aria-hidden="true" />
       <div className="container hero__inner">
         <motion.h1 id="hero-title" className="hero__type" style={{ y: typeY, opacity: typeOpacity }} aria-label="Introducing Excellence">
-          <SplitText text="Introducing" className="hero__intro" by="word" inView={false} delay={0.02} duration={0.55} />
+          <SplitText text="Introducing" className="hero__intro" by="word" inView={false} delay={0.1} duration={0.9} />
           <motion.span className="hero__word-wrap" style={{ x: wordX }}>
-            <SplitText text="Excellence" className="hero__word" by="char" inView={false} delay={0.06} stagger={0.022} duration={0.65} />
+            <SplitText text="Excellence" className="hero__word" by="char" inView={false} delay={0.2} stagger={0.05} duration={1} />
             <motion.span
               className="hero__dot"
               aria-hidden="true"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.4, ease: EASE }}
+              transition={{ delay: 1, duration: 0.6, ease: EASE }}
             >
               .
             </motion.span>
@@ -64,9 +64,12 @@ export default function Hero({ vehicles }) {
           <motion.div className="hero__car-inner" style={{ x: carX, y: carTilt }}>
             <motion.div
               className="hero__car-stage"
-              initial={{ opacity: 0, x: '8%' }}
+              initial={{ opacity: 0, x: '42%' }}
               animate={{ opacity: 1, x: '0%' }}
-              transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
+              transition={{
+                x: { duration: 3.2, delay: 0.3, ease: [0.2, 0.7, 0.2, 1] },
+                opacity: { duration: 1.4, delay: 0.3, ease: 'easeOut' },
+              }}
             >
               <img
                 src="/images/hero-car.webp"
@@ -86,12 +89,12 @@ export default function Hero({ vehicles }) {
 
         <div className="hero__bottom">
           <div className="hero__copy">
-            <SplitText as="h2" text={'Drive beyond\nlimits.'} className="hero__headline" inView={false} delay={0.2} />
+            <SplitText as="h2" text={'Drive beyond\nlimits.'} className="hero__headline" inView={false} delay={0.9} duration={0.9} />
             <motion.div
               className="hero__copy-rest"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
+              transition={{ duration: 0.9, delay: 1.2, ease: EASE }}
             >
               <p className="hero__sub">Discover exceptional vehicles. Experience excellence. Find your next drive.</p>
               <ul className="hero__checks">
@@ -114,12 +117,12 @@ export default function Hero({ vehicles }) {
             className="hero__stats glass"
             initial={{ opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.35, ease: EASE }}
+            transition={{ duration: 0.9, delay: 1.6, ease: EASE }}
           >
             {stats.map((s, i) => (
               <div key={s.label} className="hero__stat">
                 <dt>{s.label}</dt>
-                <dd><CountUp value={s.value} delay={0.4 + i * 0.05} /></dd>
+                <dd><CountUp value={s.value} delay={1.7 + i * 0.08} /></dd>
               </div>
             ))}
           </motion.dl>

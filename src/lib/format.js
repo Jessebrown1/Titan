@@ -18,8 +18,9 @@ export const formatNumber = (v) => number.format(Number(v || 0));
 export const formatDate = (v) => (v ? date.format(new Date(v)) : '—');
 
 export const formatRate = (v) => `${formatPrice(v)} / day`;
+// Every car is in exactly one list: the sale stock or the rental fleet.
 export const isRentable = (v) => Boolean(v?.for_rent && v.rent_per_day > 0 && v.status !== 'sold');
-export const isForSale = (v) => v?.for_sale !== false;
+export const isForSale = (v) => !v?.for_rent;
 
 export const vehicleTitle = (v) => (v ? `${v.year} ${v.make} ${v.model}` : '');
 

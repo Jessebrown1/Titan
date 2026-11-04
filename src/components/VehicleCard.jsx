@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Gauge, Cog, Fuel } from 'lucide-react';
-import { formatMileage, formatPrice, formatRate, isForSale, isRentable, STATUS_LABEL } from '../lib/format';
+import { formatMileage, formatPrice, formatRate, STATUS_LABEL } from '../lib/format';
 import { img, srcSet } from '../lib/image';
 import TiltCard from './motion/TiltCard';
 
-export default function VehicleCard({ vehicle, index = 0, mode = 'all' }) {
+export default function VehicleCard({ vehicle, index = 0 }) {
   const v = vehicle;
-  const rentable = isRentable(v);
-  const showRent = rentable && (mode === 'rent' || !isForSale(v));
   const title = `${v.year} ${v.make} ${v.model}`;
   return (
     <motion.article
@@ -19,7 +17,7 @@ export default function VehicleCard({ vehicle, index = 0, mode = 'all' }) {
       transition={{ duration: 0.45, delay: (index % 3) * 0.05, ease: [0.22, 1, 0.36, 1] }}
     >
       <TiltCard className="vcard__tilt">
-      <Link to={`/vehicles/${v.id}${mode === 'rent' ? '?mode=rent' : ''}`} className="vcard__link" aria-label={`View details: ${title}`}>
+      <Link to={`/vehicles/${v.id}`} className="vcard__link" aria-label={`View details: ${title}`}>
         <div className="vcard__media">
           <img
             src={img(v.main_image, 900)}
@@ -31,8 +29,6 @@ export default function VehicleCard({ vehicle, index = 0, mode = 'all' }) {
           />
           <div className="vcard__tags">
             {v.status !== 'available' && <span className={`badge badge--${v.status}`}>{STATUS_LABEL[v.status]}</span>}
-            {rentable && <span className="badge badge--rent badge--plain">For rent</span>}
-            {v.is_demo && <span className="demo-tag">Demo</span>}
           </div>
         </div>
         <div className="vcard__body">
@@ -41,10 +37,7 @@ export default function VehicleCard({ vehicle, index = 0, mode = 'all' }) {
               <p className="vcard__make">{v.make} · {v.year}</p>
               <h3 className="vcard__model">{v.model}</h3>
             </div>
-            <div className="vcard__pricing">
-              <p className="vcard__price">{showRent ? formatRate(v.rent_per_day) : formatPrice(v.price)}</p>
-              {rentable && !showRent && <p className="vcard__rate">or {formatRate(v.rent_per_day)}</p>}
-            </div>
+            <p className="vcard__price">{v.for_rent ? formatRate(v.rent_per_day) : formatPrice(v.price)}</p>
           </div>
           <ul className="vcard__specs" aria-label="Key specifications">
             <li><Gauge aria-hidden="true" />{formatMileage(v.mileage)}</li>

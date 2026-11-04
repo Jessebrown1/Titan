@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Star, Search, ExternalLink } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { listVehicles, updateVehicle, deleteVehicle } from '../services/vehiclesAdmin';
 import { Loading, ErrorState, EmptyState } from '../components/States';
-import { formatMileage, formatPrice, formatRate, isForSale, STATUS_LABEL } from '../lib/format';
+import { formatMileage, formatPrice, formatRate, STATUS_LABEL } from '../lib/format';
 import { img } from '../lib/image';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
@@ -17,16 +17,18 @@ export default function VehicleList() {
   const [actionError, setActionError] = useState('');
   const status = params.get('status') || '';
   const featured = params.get('featured') === '1';
+  const listing = params.get('listing') || '';
 
   const rows = useMemo(() => {
     const t = q.toLowerCase();
     return (data || []).filter(
       (v) =>
         (!status || v.status === status) &&
+        (!listing || (listing === 'rent') === Boolean(v.for_rent)) &&
         (!featured || v.featured) &&
         (!t || `${v.year} ${v.make} ${v.model}`.toLowerCase().includes(t)),
     );
-  }, [data, q, status, featured]);
+  }, [data, q, status, featured, listing]);
 
   async function patch(v, values) {
     setBusy(v.id);
@@ -71,6 +73,14 @@ export default function VehicleList() {
         </div>
         <Link to="/admin/vehicles/new" className="btn btn--dark"><Plus /> Add vehicle</Link>
       </header>
+
+      <div className="listing-tabs" role="group" aria-label="Show vehicles">
+        {[['', 'All', data?.length], ['sale', 'For sale', data?.filter((v) => !v.for_rent).length], ['rent', 'For rent', data?.filter((v) => v.for_rent).length]].map(([value, label, count]) => (
+          <button key={label} type="button" aria-pressed={listing === value} className={listing === value ? 'is-active' : ''} onClick={() => setFilter('listing', value)}>
+            {label}{count != null ? ` (${count})` : ''}
+          </button>
+        ))}
+      </div>
 
       <div className="admin-toolbar">
         <div className="admin-search">
@@ -117,13 +127,13 @@ export default function VehicleList() {
                       {v.main_image ? <img src={img(v.main_image, 200)} alt="" /> : <span className="vrow__ph" />}
                       <div>
                         <strong>{v.make} {v.model}</strong>
-                        <span className="muted">{v.year}{v.is_demo ? ' · Demo' : ''}</span>
+                        <span className="muted">{v.year}</span>
                       </div>
                     </div>
                   </td>
-                  <td data-label="Price">
-                    {isForSale(v) ? formatPrice(v.price) : <span className="muted">Rent only</span>}
-                    {v.for_rent && v.rent_per_day > 0 && <small className="vrow__rate">{formatRate(v.rent_per_day)}</small>}
+                  <td data-label={v.for_rent ? 'Daily rate' : 'Price'}>
+                    {v.for_rent ? formatRate(v.rent_per_day) : formatPrice(v.price)}
+                    <small className="vrow__rate">{v.for_rent ? 'For rent' : 'For sale'}</small>
                   </td>
                   <td data-label="Mileage">{formatMileage(v.mileage)}</td>
                   <td data-label="Status" className="td--status">
