@@ -1,5 +1,5 @@
 // DEMO CONTENT — sample vehicles shown only while Supabase is not configured.
-// Models reflect what sells well in Ghana; prices are illustrative, not quotes.
+// Prices are illustrative, not quotes.
 // Photos are from Unsplash. Replace with real inventory through /admin once the
 // backend is connected (supabase/seed.sql loads the same samples, flagged is_demo).
 const u = (id) => `https://images.unsplash.com/photo-${id}`;
@@ -28,7 +28,7 @@ export const demoVehicles = [
     engine: '4.6L V8',
     colour: 'Pearl White',
     description:
-      'The vehicle Ghana trusts for everything from Accra boardrooms to the long road north. Foreign used, full leather, sunroof, reverse camera and seven seats.',
+      'Built for everything from the boardroom to the longest road. Full leather, sunroof, reverse camera and seven seats.',
     main_image: u('1709620435533-56483034bdd4'),
     images: [u('1654688554491-69d21d38fb91')],
     featured: true,
@@ -47,7 +47,7 @@ export const demoVehicles = [
     engine: '2.8L turbo diesel',
     colour: 'Pearl White',
     description:
-      'Comfortable, tough and easy to maintain anywhere in the country. Foreign used, with seven seats, leather interior and strong air conditioning.',
+      'Comfortable, tough and easy to maintain, with seven seats, leather interior and strong air conditioning.',
     main_image: u('1670736297573-fde2cbcf1de7'),
     created_at: '2026-10-28T10:00:00Z',
   }),
@@ -60,7 +60,7 @@ export const demoVehicles = [
     engine: '3.5L V6',
     colour: 'Obsidian Black',
     description:
-      'A refined executive SUV with a quiet cabin and a reputation for reliability. Foreign used, with panoramic roof, heated leather seats and Mark Levinson audio.',
+      'A refined executive SUV with a quiet cabin and a reputation for reliability. Panoramic roof, heated leather seats and Mark Levinson audio.',
     main_image: u('1664427356346-c31b46248e71'),
     featured: true,
     created_at: '2026-10-26T10:00:00Z',
@@ -94,7 +94,7 @@ export const demoVehicles = [
     engine: '2.5L hybrid',
     colour: 'Midnight Black',
     description:
-      'Excellent fuel economy for daily Accra traffic with the space of a proper SUV. Foreign used, with adaptive cruise control and a reverse camera.',
+      'Excellent fuel economy for daily city driving with the space of a proper SUV. Adaptive cruise control and a reverse camera.',
     main_image: u('1706509234538-9831b1b33d66'),
     created_at: '2026-10-22T10:00:00Z',
   }),
@@ -107,7 +107,7 @@ export const demoVehicles = [
     engine: '2.0L petrol',
     colour: 'Gravity Grey',
     description:
-      'Sharp, modern styling with a well-equipped cabin. Foreign used, with a large touchscreen, wireless charging and LED lighting.',
+      'Sharp, modern styling with a well-equipped cabin, a large touchscreen, wireless charging and LED lighting.',
     main_image: u('1688893288248-3338b8491a46'),
     status: 'reserved',
     created_at: '2026-10-20T10:00:00Z',
@@ -124,7 +124,7 @@ export const demoVehicles = [
     engine: '2.5L petrol',
     colour: 'Celestial Silver',
     description:
-      'A comfortable, dependable saloon that holds its value. Foreign used, with sport seats, Apple CarPlay and low running costs.',
+      'A comfortable, dependable saloon that holds its value, with sport seats, Apple CarPlay and low running costs.',
     main_image: u('1621007947382-bb3c3994e3fb'),
     created_at: '2026-10-18T10:00:00Z',
   }),
@@ -140,7 +140,7 @@ export const demoVehicles = [
     engine: '1.8L petrol',
     colour: 'Super White',
     description:
-      'The most sensible car on Ghanaian roads: economical, reliable and easy to service. Foreign used, with Toyota Safety Sense and a reverse camera.',
+      'Economical, reliable and easy to service, with Toyota Safety Sense and a reverse camera.',
     main_image: u('1638618164682-12b986ec2a75'),
     images: [u('1623869675781-80aa31012a5a')],
     created_at: '2026-10-16T10:00:00Z',
@@ -157,7 +157,7 @@ export const demoVehicles = [
     engine: '2.0L petrol',
     colour: 'Magnetic Grey',
     description:
-      'A practical family SUV with a high driving position for Ghanaian roads. Foreign used, clean interior and strong air conditioning.',
+      'A practical family SUV with a high driving position, a clean interior and strong air conditioning.',
     main_image: u('1575090536203-2a6193126514'),
     created_at: '2026-10-14T10:00:00Z',
   }),
@@ -170,7 +170,7 @@ export const demoVehicles = [
     engine: '2.0L petrol',
     colour: 'Phantom Black',
     description:
-      'Striking looks and excellent value. Foreign used, economical and well equipped, with a digital display and Apple CarPlay.',
+      'Striking looks and excellent value. Economical and well equipped, with a digital display and Apple CarPlay.',
     main_image: u('1645145214095-84fca73e0cc5'),
     status: 'sold',
     created_at: '2026-10-12T10:00:00Z',

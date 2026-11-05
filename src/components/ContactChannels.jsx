@@ -12,7 +12,7 @@ export default function ContactChannels({ compact = false }) {
       action: 'Start a chat',
       external: true,
     },
-    { icon: Mail, label: 'Email', value: site.email, href: links.mail(`Enquiry — ${site.name}`), action: 'Send an email' },
+    { icon: Mail, label: 'Email', value: site.email, href: links.mail(`Enquiry for ${site.name}`), action: 'Send an email' },
     { icon: MapPin, label: 'Location', value: site.address, href: links.map, action: 'Get directions', external: true },
   ];
   return (

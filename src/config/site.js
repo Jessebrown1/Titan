@@ -5,11 +5,8 @@ const env = import.meta.env;
 const clean = (v) => (typeof v === 'string' ? v.trim() : '');
 
 const phone = clean(env.VITE_COMPANY_PHONE);
-// wa.me needs the full international number; a local Ghana number (024…) gets 233.
-const toWhatsApp = (v) => {
-  const digits = v.replace(/[^\d]/g, '');
-  return /^0\d{9}$/.test(digits) ? `233${digits.slice(1)}` : digits.replace(/^00/, '');
-};
+// wa.me needs the full international number, with its country code.
+const toWhatsApp = (v) => v.replace(/[^\d]/g, '').replace(/^00/, '');
 const whatsapp = toWhatsApp(clean(env.VITE_COMPANY_WHATSAPP) || phone); // defaults to the phone number
 const email = clean(env.VITE_COMPANY_EMAIL);
 const address = clean(env.VITE_COMPANY_ADDRESS);

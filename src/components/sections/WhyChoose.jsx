@@ -3,10 +3,10 @@ import Reveal from '../Reveal';
 import SplitText from '../motion/SplitText';
 
 const BENEFITS = [
-  { icon: ListChecks, title: 'Carefully Selected Vehicles', text: 'A focused collection rather than an endless lot — each vehicle is chosen to meet our standards.' },
+  { icon: ListChecks, title: 'Carefully Selected Vehicles', text: 'A focused collection rather than an endless lot. Each vehicle is chosen to meet our standards.' },
   { icon: BadgeCheck, title: 'Quality and Reliability', text: 'We favour well-specified vehicles from respected manufacturers, with full details shared upfront.' },
   { icon: HeartHandshake, title: 'Customer-Focused Service', text: 'We take time to understand what you need and help you find the vehicle that genuinely suits you.' },
-  { icon: MessagesSquare, title: 'Direct Assistance', text: 'Speak directly with our team by WhatsApp, telephone or email — quick answers, no call centres.' },
+  { icon: MessagesSquare, title: 'Direct Assistance', text: 'Speak directly with our team by WhatsApp, telephone or email for quick answers and no call centres.' },
 ];
 
 export default function WhyChoose() {

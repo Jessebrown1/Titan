@@ -12,7 +12,7 @@ const IMAGES = {
 
 const VALUES = [
   { icon: Gem, title: 'Quality Selection', text: 'Every vehicle in our collection is chosen with care, with an emphasis on specification, presentation and character.' },
-  { icon: ShieldCheck, title: 'Customer Confidence', text: 'Clear information, honest conversations and no pressure — so you can decide with complete confidence.' },
+  { icon: ShieldCheck, title: 'Customer Confidence', text: 'Clear information, honest conversations and no pressure, so you can decide with complete confidence.' },
   { icon: Sparkles, title: 'Exceptional Service', text: 'A personal, attentive approach from your first question to the moment you collect your keys.' },
 ];
 

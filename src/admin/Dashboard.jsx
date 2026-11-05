@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  ArrowRight, ArrowUpRight, CalendarCheck, CarFront, CheckCircle2, CircleDollarSign, ExternalLink, ImageOff,
-  Inbox, KeyRound, MessageSquare, Phone, Plus, Tag,
+  ArrowRight, ArrowUpRight, Bell, CalendarCheck, CarFront, CheckCircle2, CircleDollarSign, ExternalLink, ImageOff,
+  Inbox, KeyRound, MessageSquare, Phone, Plus, Smartphone, Tag,
 } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { listVehicles } from '../services/vehiclesAdmin';
@@ -15,6 +15,8 @@ import { img } from '../lib/image';
 import { hasAnyContact, site } from '../config/site';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { EASE } from '../lib/motion';
+import { isStandalone } from '../lib/pwa';
+import { pushState } from '../lib/push';
 
 const DAY = 86400000;
 const greeting = () => {
@@ -31,7 +33,8 @@ function useOverview(vehicles, messages) {
     const today = dayKey(new Date());
     const now = Date.now();
     const rentals = messages.filter((m) => m.type === 'rental');
-    const enquiries = messages.filter((m) => m.type !== 'rental');
+    const drives = messages.filter((m) => m.type === 'test_drive');
+    const enquiries = messages.filter((m) => m.type === 'sale');
     const rateOf = Object.fromEntries(vehicles.map((v) => [v.id, Number(v.rent_per_day) || 0]));
 
     const available = vehicles.filter((v) => v.status === 'available');
@@ -64,26 +67,36 @@ function useOverview(vehicles, messages) {
     const statuses = Object.entries(STATUS_LABEL).map(([key, label]) => ({ label, value: vehicles.filter((v) => v.status === key).length }));
 
     const newRentals = rentals.filter((r) => r.status === 'new');
+    const newDrives = drives.filter((d) => d.status === 'new');
     const newEnquiries = enquiries.filter((e) => e.status === 'new');
     const attention = [
       newRentals.length && { icon: KeyRound, text: `${plural(newRentals.length, 'rental request')} to confirm`, to: '/admin/rentals?status=new', urgent: true },
+      newDrives.length && { icon: CalendarCheck, text: `${plural(newDrives.length, 'test drive')} to confirm`, to: '/admin/rentals?kind=test_drive&status=new', urgent: true },
       newEnquiries.length && { icon: Inbox, text: `${plural(newEnquiries.length, 'new enquiry').replace('enquirys', 'enquiries')} to answer`, to: '/admin/enquiries?status=new', urgent: true },
       vehicles.filter((v) => isForSale(v) && v.price == null).length && { icon: Tag, text: `${plural(vehicles.filter((v) => isForSale(v) && v.price == null).length, 'car')} without a price`, to: '/admin/vehicles' },
       vehicles.filter((v) => !v.main_image).length && { icon: ImageOff, text: `${plural(vehicles.filter((v) => !v.main_image).length, 'car')} without a photo`, to: '/admin/vehicles' },
+      !isStandalone() && { icon: Smartphone, text: 'Add the admin app to your phone', to: '/admin/app' },
+      pushState() === 'off' && { icon: Bell, text: 'Turn on live notifications', to: '/admin/app' },
       !hasAnyContact && { icon: Phone, text: 'Add your phone, email and address to the website', hint: 'Set these in .env' },
     ].filter(Boolean);
 
     const activity = messages.slice(0, 6).map((m) => ({
       id: m.id,
-      icon: m.type === 'rental' ? KeyRound : MessageSquare,
+      icon: { rental: KeyRound, test_drive: CalendarCheck }[m.type] || MessageSquare,
       who: m.full_name,
-      what: m.type === 'rental' ? 'requested a rental' : 'sent an enquiry',
+      what: { rental: 'requested a rental', test_drive: 'booked a test drive' }[m.type] || 'sent an enquiry',
       about: m.vehicle_interest,
       when: m.created_at,
-      to: m.type === 'rental' ? '/admin/rentals' : '/admin/enquiries',
+      to: { rental: '/admin/rentals', test_drive: '/admin/rentals?kind=test_drive' }[m.type] || '/admin/enquiries',
     }));
 
-    return { available, stockValue, fleet, upcoming, booked, week, lastWeek, daily, makes, statuses, newRentals, newEnquiries, attention, activity };
+    const agenda = [
+      ...upcoming.map((r) => ({ id: r.id, date: r.rent_start, title: r.vehicle_interest, note: `${r.full_name} · ${plural(rentalDays(r), 'day')}` })),
+      ...drives.filter((d) => d.status === 'confirmed' && d.drive_date >= today)
+        .map((d) => ({ id: d.id, date: d.drive_date, title: d.vehicle_interest, note: `${d.full_name} · test drive at ${d.drive_time}` })),
+    ].sort((a, b) => a.date.localeCompare(b.date));
+
+    return { available, stockValue, fleet, upcoming, agenda, booked, week, lastWeek, daily, makes, statuses, newRentals, newDrives, newEnquiries, attention, activity };
   }, [vehicles, messages]);
 }
 
@@ -98,12 +111,18 @@ export default function Dashboard() {
   const vehicles = useAsync(() => listVehicles(), []);
   const messages = useAsync(() => listAllMessages(), []);
   const o = useOverview(vehicles.data || [], messages.data || []);
+  const { reload: reloadMessages } = messages;
+
+  useEffect(() => {
+    window.addEventListener('titan:new-message', reloadMessages);
+    return () => window.removeEventListener('titan:new-message', reloadMessages);
+  }, [reloadMessages]);
 
   if (vehicles.loading || messages.loading) return <Loading />;
   if (vehicles.error) return <ErrorState error={vehicles.error} onRetry={vehicles.reload} />;
   if (messages.error) return <ErrorState error={messages.error} onRetry={messages.reload} />;
 
-  const toReply = o.newRentals.length + o.newEnquiries.length;
+  const toReply = o.newRentals.length + o.newDrives.length + o.newEnquiries.length;
   const weekDelta = o.week - o.lastWeek;
   const kpis = [
     { label: 'Stock for sale', value: formatCompact(o.stockValue), note: `${plural(o.available.filter(isForSale).length, 'car')} available`, icon: CircleDollarSign, to: '/admin/vehicles?status=available' },
@@ -123,7 +142,7 @@ export default function Dashboard() {
           </p>
           <div className="welcome__actions">
             <Link to="/admin/vehicles/new" className="welcome__btn welcome__btn--solid"><Plus aria-hidden="true" /> Add vehicle</Link>
-            {toReply > 0 && <Link to={o.newRentals.length ? '/admin/rentals?status=new' : '/admin/enquiries?status=new'} className="welcome__btn">Reply now <ArrowRight aria-hidden="true" /></Link>}
+            {toReply > 0 && <Link to={o.newRentals.length ? '/admin/rentals?status=new' : o.newDrives.length ? '/admin/rentals?kind=test_drive&status=new' : '/admin/enquiries?status=new'} className="welcome__btn">Reply now <ArrowRight aria-hidden="true" /></Link>}
             <a href="/" target="_blank" rel="noopener noreferrer" className="welcome__btn">View website <ExternalLink aria-hidden="true" /></a>
           </div>
         </div>
@@ -183,20 +202,20 @@ export default function Dashboard() {
         </motion.section>
 
         <motion.section className="panel" {...rise(9)}>
-          <div className="panel__head"><h2>Upcoming rentals</h2><Link to="/admin/rentals" className="btn btn--ghost btn--sm">All</Link></div>
-          {o.upcoming.length === 0 ? (
+          <div className="panel__head"><h2>Upcoming bookings</h2><Link to="/admin/rentals" className="btn btn--ghost btn--sm">All</Link></div>
+          {o.agenda.length === 0 ? (
             <div className="panel__blank">
               <span className="panel__blank-icon"><CalendarCheck aria-hidden="true" /></span>
-              <p>No confirmed bookings yet. Confirmed rentals show here with their dates.</p>
+              <p>No confirmed bookings yet. Confirmed rentals and test drives show here.</p>
             </div>
           ) : (
             <ul className="agenda">
-              {o.upcoming.slice(0, 4).map((r) => {
-                const start = new Date(`${r.rent_start}T12:00:00`);
+              {o.agenda.slice(0, 4).map((item) => {
+                const start = new Date(`${item.date}T12:00:00`);
                 return (
-                  <li key={r.id}>
+                  <li key={item.id}>
                     <span className="agenda__date"><strong>{start.getDate()}</strong>{shortDay(start, { month: 'short' })}</span>
-                    <span className="agenda__text"><strong>{r.vehicle_interest}</strong><small>{r.full_name} · {plural(rentalDays(r), 'day')}</small></span>
+                    <span className="agenda__text"><strong>{item.title}</strong><small>{item.note}</small></span>
                   </li>
                 );
               })}

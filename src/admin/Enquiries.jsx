@@ -1,17 +1,30 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mail, Phone, MessageCircle, Trash2, Inbox } from 'lucide-react';
 import { useAsync } from '../hooks/useAsync';
 import { listEnquiries, updateEnquiryStatus, deleteEnquiry, ENQUIRY_STATUSES } from '../services/enquiriesAdmin';
+import { listVehicles } from '../services/vehiclesAdmin';
 import { Loading, ErrorState, EmptyState } from '../components/States';
+import { img } from '../lib/image';
 import { formatDate } from '../lib/format';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const LABEL = { new: 'New', contacted: 'Contacted', resolved: 'Resolved' };
 
+// Matches by ID, or by name for enquiries where the visitor typed the car.
+const photoFor = (e, vehicles) => (vehicles || []).find(
+  (v) => v.id === e.vehicle_id || `${v.year} ${v.make} ${v.model}` === e.vehicle_interest,
+)?.main_image;
+
 export default function Enquiries() {
   useDocumentMeta({ title: 'Enquiries', noindex: true });
   const { data, loading, error, reload, setData } = useAsync(() => listEnquiries(), []);
+  const { data: vehicles } = useAsync(() => listVehicles(), []);
+
+  useEffect(() => {
+    window.addEventListener('titan:new-message', reload);
+    return () => window.removeEventListener('titan:new-message', reload);
+  }, [reload]);
   const [params, setParams] = useSearchParams();
   const [busy, setBusy] = useState(null);
   const [actionError, setActionError] = useState('');
@@ -107,7 +120,12 @@ export default function Enquiries() {
                     </select>
                   </div>
                 </div>
-                {e.vehicle_interest && <p className="enquiry__vehicle"><span>Vehicle of interest</span>{e.vehicle_interest}</p>}
+                {e.vehicle_interest && (
+                  <div className="enquiry__car">
+                    {photoFor(e, vehicles) && <img src={img(photoFor(e, vehicles), 240)} alt="" loading="lazy" />}
+                    <p className="enquiry__vehicle"><span>Vehicle of interest</span>{e.vehicle_interest}</p>
+                  </div>
+                )}
                 <p className="enquiry__msg">{e.message}</p>
                 <div className="enquiry__foot">
                   <a className="btn btn--outline btn--sm" href={`mailto:${e.email}?subject=${encodeURIComponent('Your enquiry with TITAN MOTORS')}`}><Mail /> {e.email}</a>

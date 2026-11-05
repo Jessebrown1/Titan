@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import App from './App';
+import { hideSplash } from './lib/splash';
 import { ThemeProvider } from './hooks/useTheme';
 import '@fontsource-variable/inter/wght.css';
 import '@fontsource-variable/sora/wght.css';
@@ -24,3 +25,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>,
 );
+
+hideSplash();

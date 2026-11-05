@@ -26,7 +26,7 @@ export default function Gallery({ images, title }) {
   }, [zoom, go]);
 
   if (!count) return <div className="gallery__main gallery__main--empty">No photographs available</div>;
-  const alt = (i) => `${title} — photograph ${i + 1} of ${count}`;
+  const alt = (i) => `${title}, photograph ${i + 1} of ${count}`;
 
   return (
     <div className="gallery">

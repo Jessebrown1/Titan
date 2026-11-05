@@ -13,7 +13,7 @@ function setMeta(attr, key, content) {
 
 export function useDocumentMeta({ title, description, image, noindex } = {}) {
   useEffect(() => {
-    const fullTitle = title ? `${title} | ${site.name}` : `${site.name} — Exceptional Vehicles`;
+    const fullTitle = title ? `${title} | ${site.name}` : `${site.name} | Exceptional Vehicles`;
     const desc = description || site.description;
     document.title = fullTitle;
     setMeta('name', 'description', desc);

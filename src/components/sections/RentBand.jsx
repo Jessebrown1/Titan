@@ -25,7 +25,7 @@ export default function RentBand({ vehicles }) {
           <Reveal><span className="eyebrow">Rent a car</span></Reveal>
           <SplitText as="h2" id="rent-title" className="display-lg" text={'Not buying today?\nRent it instead.'} />
           <Reveal delay={0.08}>
-            <p className="lead">Weddings, business trips, visitors in town or a week upcountry. Rent by the day, with or without a driver.</p>
+            <p className="lead">Weddings, business trips, visitors in town or a week away. Rent by the day, with or without a driver.</p>
           </Reveal>
           <ol className="rentband__steps">
             {STEPS.map(({ icon: Icon, title, text }, i) => (

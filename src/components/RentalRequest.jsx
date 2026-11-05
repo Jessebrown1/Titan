@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Check, Info, MessageCircle, Send, UserRound } from 'lucide-react';
-import { getBookedDates, submitRentalRequest } from '../services/enquiries';
+import { Calendar, Info, MessageCircle, Send, ShieldCheck, UserRound } from 'lucide-react';
+import { getBookedDates, submitRentalRequest, uploadRentalDocument } from '../services/enquiries';
+import DocumentUpload from './DocumentUpload';
+import SuccessPanel from './SuccessPanel';
+import CarToast from './CarToast';
 import { isSupabaseConfigured } from '../lib/backend';
 import { formatPrice, formatRate, vehicleTitle } from '../lib/format';
 import { links, site } from '../config/site';
@@ -20,9 +22,13 @@ export default function RentalRequest({ vehicle }) {
   const today = useMemo(() => isoDate(new Date()), []);
   const [v, setV] = useState({ start: '', end: '', driver: false, name: '', email: '', phone: '', notes: '', company: '' });
   const [booked, setBooked] = useState([]);
+  const [licence, setLicence] = useState(null);
+  const [idCard, setIdCard] = useState(null);
+  const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error | offline
   const title = vehicleTitle(vehicle);
+  const hasDocuments = Boolean(idCard || (!v.driver && licence));
 
   useEffect(() => {
     let active = true;
@@ -55,6 +61,7 @@ export default function RentalRequest({ vehicle }) {
     if (v.name.trim().length < 2) errs.name = 'Please enter your full name.';
     if (!PHONE_RE.test(v.phone.trim())) errs.phone = 'Please enter a valid phone number.';
     if (!EMAIL_RE.test(v.email.trim())) errs.email = 'Please enter a valid email address.';
+    if (hasDocuments && !consent) errs.consent = 'Please agree so we can review your documents.';
     setErrors(errs);
     if (Object.keys(errs).length) return;
     if (!isSupabaseConfigured) {
@@ -63,7 +70,13 @@ export default function RentalRequest({ vehicle }) {
     }
     setStatus('sending');
     try {
+      const [licencePath, idPath] = await Promise.all([
+        !v.driver && licence ? uploadRentalDocument(licence, 'licence') : null,
+        idCard ? uploadRentalDocument(idCard, 'id') : null,
+      ]);
       await submitRentalRequest({
+        licence_path: licencePath,
+        id_path: idPath,
         full_name: v.name.trim(),
         email: v.email.trim(),
         phone: v.phone.trim(),
@@ -84,12 +97,23 @@ export default function RentalRequest({ vehicle }) {
   if (status === 'sent') {
     const wa = links.whatsapp(`Hello ${site.name}, I just requested a rental: ${summary}.`);
     return (
-      <motion.div className="form-success rental__done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} role="status">
-        <span className="form-success__icon"><Check aria-hidden="true" /></span>
-        <h3>Request received.</h3>
-        <p className="muted">We&rsquo;ll check availability for {prettyDate(v.start)} to {prettyDate(v.end)} and contact you to confirm. Your booking isn&rsquo;t final until then.</p>
-        {wa && <a className="btn btn--outline btn--sm" href={wa} target="_blank" rel="noopener noreferrer"><MessageCircle /> Follow up on WhatsApp</a>}
-      </motion.div>
+      <>
+        <SuccessPanel
+          eyebrow="Rental request received"
+          title="We have your dates."
+          car={vehicle}
+          details={[
+            ['Pick-up', prettyDate(v.start)],
+            ['Return', prettyDate(v.end)],
+            ['Duration', `${days} ${days === 1 ? 'day' : 'days'}`],
+            ['Estimate', formatPrice(days * vehicle.rent_per_day)],
+          ]}
+          actions={wa && <a className="success__btn" href={wa} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" /> Follow up on WhatsApp</a>}
+        >
+          We&rsquo;ll check availability and reach out to you to confirm. Your booking isn&rsquo;t final until then.
+        </SuccessPanel>
+        <CarToast title="Request on its way">We&rsquo;ll reach out to you to confirm your dates.</CarToast>
+      </>
     );
   }
 
@@ -138,7 +162,7 @@ export default function RentalRequest({ vehicle }) {
       <div className="rental__dates">
         <div className="field">
           <label className="field__label" htmlFor="rq-phone">Phone</label>
-          <input id="rq-phone" className="input" type="tel" autoComplete="tel" inputMode="tel" value={v.phone} onChange={set('phone')} aria-invalid={Boolean(errors.phone)} />
+          <input id="rq-phone" className="input" type="tel" autoComplete="tel" inputMode="tel" placeholder="With country code" value={v.phone} onChange={set('phone')} aria-invalid={Boolean(errors.phone)} />
           {err('phone')}
         </div>
         <div className="field">
@@ -150,6 +174,22 @@ export default function RentalRequest({ vehicle }) {
       <div className="field">
         <label className="field__label" htmlFor="rq-notes">Notes (optional)</label>
         <input id="rq-notes" className="input" placeholder="Pick-up location, trip details…" maxLength={500} value={v.notes} onChange={set('notes')} />
+      </div>
+
+      <div className="rental__docs">
+        <p className="rental__docs-title"><ShieldCheck aria-hidden="true" /> Your documents <span>Optional</span></p>
+        <p className="rental__docs-note">Add them now to save time, or bring them when you collect the car.</p>
+        <div className="rental__dates">
+          {!v.driver && <DocumentUpload id="rq-licence" label="Driving licence" file={licence} onChange={setLicence} />}
+          <DocumentUpload id="rq-id" label="Passport or national ID" file={idCard} onChange={setIdCard} />
+        </div>
+        {hasDocuments && (
+          <label className="rental__consent">
+            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            <span>I agree to {site.name} using my documents to review this rental. They&rsquo;re stored privately and only our team can view them.</span>
+          </label>
+        )}
+        {hasDocuments && errors.consent && <span className="field__error">{errors.consent}</span>}
       </div>
 
       <div className="sr-only" aria-hidden="true">

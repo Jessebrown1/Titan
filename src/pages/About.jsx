@@ -14,7 +14,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader eyebrow="About us" title="Driven by excellence." word="TITAN">
-        A considered approach to finding your next vehicle — built on quality, confidence and service.
+        A considered approach to finding your next vehicle, built on quality, confidence and service.
       </PageHeader>
       <About />
       <WhyChoose />

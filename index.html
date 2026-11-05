@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TITAN MOTORS — Exceptional Vehicles</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>TITAN MOTORS | Exceptional Vehicles</title>
     <meta name="description" content="Discover exceptional vehicles at TITAN MOTORS. Explore our curated collection and contact our team directly by WhatsApp, telephone or email." />
     <meta name="theme-color" content="#FFFFFF" />
     <meta name="color-scheme" content="light dark" />
@@ -20,15 +20,54 @@
     </script>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="TITAN MOTORS" />
-    <meta property="og:title" content="TITAN MOTORS — Exceptional Vehicles" />
+    <meta property="og:title" content="TITAN MOTORS | Exceptional Vehicles" />
     <meta property="og:description" content="Discover exceptional vehicles. Experience excellence. Find your next drive." />
     <meta property="og:image" content="/images/hero-car.webp" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" as="image" href="/images/hero-car.webp" imagesrcset="/images/hero-car-860.webp 860w, /images/hero-car.webp 1600w" imagesizes="(max-width: 900px) 100vw, 62vw" fetchpriority="high" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="preload" as="image" href="/images/hero-car.webp" imagesrcset="/images/hero-car-860.webp 860w, /images/hero-car.webp 1500w" imagesizes="(max-width: 900px) 100vw, 62vw" fetchpriority="high" />
     <link rel="preconnect" href="https://images.unsplash.com" />
+    <style>
+      #splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-content: center; justify-items: center; gap: 14px; background: #fff; color: #111; font-family: system-ui, sans-serif; transition: transform 0.65s cubic-bezier(0.65, 0, 0.25, 1); animation: splash-failsafe 0.3s 9s forwards; }
+      html[data-theme='dark'] #splash { background: #0a0a0b; color: #f2f2f0; }
+      #splash .sp-car { width: 190px; animation: sp-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both, sp-bob 0.45s ease-in-out 0.5s infinite alternate; transition: transform 0.55s cubic-bezier(0.6, 0, 0.9, 0.4); }
+      #splash .sp-body { fill: currentColor; }
+      #splash .sp-glass { fill: #fff; } html[data-theme='dark'] #splash .sp-glass { fill: #0a0a0b; }
+      #splash .sp-wheel { animation: sp-spin 0.5s linear infinite; }
+      #splash .sp-wheel circle { fill: #fff; stroke: currentColor; stroke-width: 5; } html[data-theme='dark'] #splash .sp-wheel circle { fill: #0a0a0b; }
+      #splash .sp-wheel path { stroke: currentColor; stroke-width: 3; fill: none; }
+      #splash .sp-road { width: 240px; height: 3px; border-radius: 3px; opacity: 0.3; background: repeating-linear-gradient(90deg, currentColor 0 18px, transparent 18px 32px); background-size: 32px 100%; animation: sp-road 0.35s linear infinite; }
+      #splash .sp-name { margin-top: 10px; font-size: 13px; font-weight: 600; letter-spacing: 0.34em; }
+      #splash .sp-name span { font-weight: 300; opacity: 0.6; margin-left: 0.4em; }
+      #splash.is-leaving { transform: translateY(-100%); transition-delay: 0.2s; }
+      #splash.is-leaving .sp-car { transform: translateX(70vw); animation: none; }
+      @keyframes sp-in { from { transform: translateX(-60px); opacity: 0; } }
+      @keyframes sp-bob { to { transform: translateY(-2px); } }
+      @keyframes sp-spin { to { transform: rotate(360deg); } }
+      @keyframes sp-road { to { background-position: -32px 0; } }
+      @keyframes splash-failsafe { to { opacity: 0; visibility: hidden; } }
+      @media (prefers-reduced-motion: reduce) { #splash, #splash * { animation: none !important; transition: none !important; } }
+    </style>
   </head>
   <body>
+    <div id="splash" role="status" aria-label="Loading TITAN MOTORS">
+      <svg class="sp-car" viewBox="0 0 240 92" aria-hidden="true">
+        <path class="sp-body" d="M12 64V58c0-6 6-9 18-11l34-5c16-13 36-21 62-21h22c20 0 36 10 50 21l16 3c10 2 16 7 16 14v5c0 2-1 3-3 3h-15a20 20 0 0 0-40 0H84a20 20 0 0 0-40 0H15c-2 0-3-1-3-3Z" />
+        <path class="sp-glass" d="M76 42c12-10 28-15 46-15v15Zm52-15h20c14 0 26 7 36 15h-56Z" />
+        <g class="sp-wheel" style="transform-origin: 64px 67px"><circle cx="64" cy="67" r="15" /><path d="M53 67h22M64 56v22" /></g>
+        <g class="sp-wheel" style="transform-origin: 192px 67px"><circle cx="192" cy="67" r="15" /><path d="M181 67h22M192 56v22" /></g>
+      </svg>
+      <div class="sp-road"></div>
+      <div class="sp-name">TITAN<span>MOTORS</span></div>
+    </div>
+    <script>
+      // The loading screen plays once per visit, not on every page load.
+      try { if (sessionStorage.getItem('titan-splash')) document.getElementById('splash').remove(); } catch (e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import DemoBanner from '../components/DemoBanner';
 import { Loading } from '../components/States';
 import ScrollProgress from '../components/motion/ScrollProgress';
+import RouteCurtain from '../components/motion/RouteCurtain';
 import { useSmoothScroll } from '../hooks/useSmoothScroll';
 
 export default function PublicLayout() {
@@ -16,6 +17,7 @@ export default function PublicLayout() {
     <>
       <a href="#main" className="skip-link">Skip to content</a>
       <ScrollProgress />
+      <RouteCurtain />
       <Navbar />
       <motion.main
         id="main"

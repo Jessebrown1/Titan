@@ -1,10 +1,10 @@
 import { AlertTriangle, SearchX } from 'lucide-react';
+import CarLoader from './CarLoader';
 
 export function Loading({ label = 'Loading' }) {
   return (
-    <div className="state" role="status" aria-live="polite" style={{ borderStyle: 'none' }}>
-      <div className="spinner" />
-      <span className="sr-only">{label}</span>
+    <div className="state" style={{ borderStyle: 'none' }}>
+      <CarLoader label={label} />
     </div>
   );
 }

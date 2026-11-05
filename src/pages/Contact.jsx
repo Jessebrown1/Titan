@@ -23,7 +23,6 @@ export default function ContactPage() {
         key={defaultVehicle}
         vehicles={vehicles}
         defaultVehicle={defaultVehicle}
-        vehicleId={match && !match.id.startsWith('demo-') ? match.id : null}
       />
     </>
   );

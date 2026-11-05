@@ -513,3 +513,88 @@ a.todo__row:hover { background: var(--grey-100); }
   .feed__row { flex-wrap: wrap; }
   .feed__when { width: 100%; padding-left: 46px; }
 }
+
+.enquiry__car { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.enquiry__car img { width: 84px; height: 60px; flex: none; object-fit: cover; border-radius: 10px; background: var(--grey-100); }
+
+/* ───────── Get the app ───────── */
+.appinstall__hero {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center;
+  padding: clamp(24px, 3.4vw, 40px); border-radius: var(--radius-lg); color: #fff;
+  background: radial-gradient(80% 130% at 88% 60%, #2f3238 0%, #17181c 50%, #0c0c0e 100%);
+}
+.appinstall__copy { display: grid; gap: 10px; justify-items: start; }
+.appinstall__hero h1 { font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.04em; color: #fff; }
+.appinstall__cta { margin-top: 8px; border: 0; cursor: pointer; }
+.appinstall__done { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; font-weight: 600; }
+.appinstall__done svg { width: 18px; height: 18px; color: #4fd08a; }
+.appinstall__phone { width: 168px; height: 300px; margin-bottom: -76px; padding: 8px; border-radius: 30px; background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16), 0 30px 50px -20px rgba(0, 0, 0, 0.7); }
+.appinstall__screen { height: 100%; display: grid; place-content: start center; justify-items: center; gap: 8px; padding-top: 44px; border-radius: 23px; background: linear-gradient(160deg, #3b4256, #16181d 70%); }
+.appinstall__screen img { border-radius: 17px; box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45); }
+.appinstall__screen span { font-size: 12px; color: #fff; }
+.appinstall__guides { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.appinstall__guide { padding: 16px; border-radius: 14px; background: var(--grey-50); border: 1px solid var(--border); }
+.appinstall__guide.is-current { border-color: var(--accent); }
+.appinstall__guide h3 { font-size: 16px; margin-bottom: 12px; }
+.appinstall__guide ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.appinstall__guide li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 14px; }
+.appinstall__guide li > span { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; font-size: 11.5px; font-weight: 700; background: var(--text); color: var(--on-text); }
+.appinstall__guide li svg { width: 16px; height: 16px; color: var(--accent); }
+.appinstall__guide strong { font-weight: 600; }
+.appinstall__note { margin-top: 12px; }
+.appinstall__benefits { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.appinstall__benefits li { display: grid; gap: 6px; align-content: start; }
+.appinstall__benefits h3 { font-size: 16px; margin-top: 8px; }
+.appinstall__benefits p { font-size: 13.5px; color: var(--text-2); }
+@media (max-width: 760px) {
+  .appinstall__hero { grid-template-columns: 1fr; }
+  .appinstall__phone { display: none; }
+  .appinstall__guides, .appinstall__benefits { grid-template-columns: 1fr; }
+}
+
+/* Installed app: keep clear of the notch and home indicator */
+@media (display-mode: standalone) {
+  .admin__side { padding-top: env(safe-area-inset-top); }
+}
+@media (display-mode: standalone) and (max-width: 900px) {
+  .admin__side { height: calc(60px + env(safe-area-inset-top)); }
+}
+
+/* New-message badge sits on the tab icon in the phone tab bar */
+@media (max-width: 900px) {
+  .admin__nav .admin__count { position: absolute; top: 4px; left: calc(50% + 6px); margin: 0; min-width: 17px; height: 17px; padding: 0 4px; font-size: 10px; }
+}
+
+/* ───────── Bookings ───────── */
+.rentfacts--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.docrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); }
+.docrow__label { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; font-size: 13px; font-weight: 600; }
+.docrow__label svg { width: 15px; height: 15px; color: var(--accent); }
+.docrow__none { font-size: 13px; }
+.docrow .btn { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* ───────── Live alerts ───────── */
+.alerts { position: fixed; top: 16px; right: 16px; z-index: 260; display: grid; gap: 8px; width: min(380px, calc(100vw - 32px)); }
+.alert {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: 12px 38px 14px 12px; border-radius: 18px; color: #f4f4f2;
+  background: rgba(16, 17, 21, 0.94); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 22px 44px -18px rgba(0, 0, 0, 0.6);
+}
+.alert__icon { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 12px; background: rgba(142, 164, 255, 0.16); color: #b9c7ff; }
+.alert__icon svg { width: 18px; height: 18px; }
+.alert__text { display: grid; gap: 1px; min-width: 0; }
+.alert__text strong { font-family: var(--font-display); font-size: 14px; font-weight: 500; }
+.alert__text span { font-size: 13px; color: rgba(244, 244, 242, 0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert__close { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: transparent; color: rgba(244, 244, 242, 0.55); }
+.alert__close svg { width: 14px; height: 14px; }
+.alert__timer { position: absolute; inset: auto 0 0; height: 2px; transform-origin: 0 50%; background: #8ea4ff; }
+@media (display-mode: standalone) { .alerts { top: calc(16px + env(safe-area-inset-top)); } }
+
+.notify { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.notify__text { flex: 1 1 240px; display: grid; gap: 2px; }
+.notify__text strong { font-size: 15px; font-weight: 600; }
+.notify__text span { font-size: 13.5px; color: var(--text-2); }
+.notify__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.notify__live { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-2); margin-top: 12px; }
+.notify__live i { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.alert__wrap { position: relative; }

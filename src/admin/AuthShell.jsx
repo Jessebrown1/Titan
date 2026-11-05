@@ -26,7 +26,7 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
       <div className="login__shade" aria-hidden="true" />
 
       <header className="login__top">
-        <Link to="/" className="login__brand" aria-label="TITAN MOTORS — back to website">
+        <Link to="/" className="login__brand" aria-label="TITAN MOTORS, back to website">
           <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 5h22v4.2h-8.6V24h-4.8V9.2H3z" fill="currentColor" /></svg>
           <span>TITAN<em>MOTORS</em></span>
         </Link>
@@ -45,7 +45,7 @@ export default function AuthShell({ children, eyebrow = 'Staff area' }) {
         >
           <span className="login__eyebrow">{eyebrow}</span>
           <h1 className="login__headline">The showroom,<br />behind the scenes.</h1>
-          <p className="login__lede">Manage the collection, publish new arrivals and respond to every enquiry — all in one place.</p>
+          <p className="login__lede">Manage the collection, publish new arrivals and respond to every enquiry, all in one place.</p>
         </motion.div>
 
         <motion.div

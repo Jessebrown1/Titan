@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Info, Send, Mail, MessageCircle } from 'lucide-react';
+import { Info, Send, Mail, MessageCircle } from 'lucide-react';
 import { submitEnquiry } from '../services/enquiries';
+import SuccessPanel from './SuccessPanel';
+import CarToast from './CarToast';
 import { isSupabaseConfigured } from '../lib/backend';
 import { links, site } from '../config/site';
+import { formatPrice, formatRate } from '../lib/format';
+import { img } from '../lib/image';
 
 const EMPTY = { full_name: '', email: '', phone: '', vehicle_interest: '', message: '', company: '' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -19,24 +23,33 @@ function validate(v) {
   return e;
 }
 
-export default function ContactForm({ defaultVehicle = '', vehicleId = null, vehicleOptions = [] }) {
+const carTitle = (v) => `${v.year} ${v.make} ${v.model}`;
+
+export default function ContactForm({ defaultVehicle = '', vehicles = [] }) {
   const [values, setValues] = useState({ ...EMPTY, vehicle_interest: defaultVehicle });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [status, setStatus] = useState('idle'); // idle | sending | sent | error | offline
   const [serverError, setServerError] = useState('');
+  const [sentCar, setSentCar] = useState(null);
 
   const liveErrors = useMemo(() => validate(values), [values]);
+  const options = useMemo(() => vehicles.filter((v) => v.status !== 'sold'), [vehicles]);
+  // The car the visitor has picked, shown as a preview and linked to their enquiry.
+  const car = useMemo(() => {
+    const typed = values.vehicle_interest.trim().toLowerCase();
+    return typed ? vehicles.find((v) => carTitle(v).toLowerCase() === typed) || null : null;
+  }, [values.vehicle_interest, vehicles]);
   const showError = (k) => (touched[k] || status === 'invalid') && (errors[k] || liveErrors[k]);
 
   const set = (k) => (e) => setValues((v) => ({ ...v, [k]: e.target.value }));
   const blur = (k) => () => setTouched((t) => ({ ...t, [k]: true }));
 
-  const composed = `Hello ${site.name},\n\nName: ${values.full_name}\nEmail: ${values.email}\nPhone: ${values.phone || '—'}\nVehicle of interest: ${values.vehicle_interest || '—'}\n\n${values.message}`;
+  const composed = `Hello ${site.name},\n\nName: ${values.full_name}\nEmail: ${values.email}\nPhone: ${values.phone || 'Not given'}\nVehicle of interest: ${values.vehicle_interest || 'Not given'}\n\n${values.message}`;
 
   async function onSubmit(e) {
     e.preventDefault();
-    if (values.company) return; // honeypot — silently ignore bots
+    if (values.company) return; // honeypot: silently ignore bots
     const errs = validate(values);
     setErrors(errs);
     if (Object.keys(errs).length) {
@@ -52,7 +65,8 @@ export default function ContactForm({ defaultVehicle = '', vehicleId = null, veh
     setStatus('sending');
     setServerError('');
     try {
-      await submitEnquiry({ ...values, vehicle_id: vehicleId });
+      await submitEnquiry({ ...values, vehicle_id: car && !car.id.startsWith('demo-') ? car.id : null });
+      setSentCar(car);
       setStatus('sent');
       setValues({ ...EMPTY });
       setTouched({});
@@ -65,14 +79,17 @@ export default function ContactForm({ defaultVehicle = '', vehicleId = null, veh
 
   if (status === 'sent') {
     return (
-      <motion.div className="form-success" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} role="status">
-        <span className="form-success__icon"><Check aria-hidden="true" /></span>
-        <h3>Thank you — your enquiry has been received.</h3>
-        <p className="muted">A member of our team will be in touch shortly.</p>
-        <button type="button" className="btn btn--outline btn--sm" onClick={() => setStatus('idle')}>
-          Send another enquiry
-        </button>
-      </motion.div>
+      <>
+        <SuccessPanel
+          eyebrow="Enquiry received"
+          title="Thank you."
+          car={sentCar}
+          actions={<button type="button" className="success__btn" onClick={() => setStatus('idle')}>Send another enquiry</button>}
+        >
+          Your enquiry has been received. Our team will reach out to you shortly.
+        </SuccessPanel>
+        <CarToast title="Enquiry on its way">Our team will reach out to you shortly.</CarToast>
+      </>
     );
   }
 
@@ -116,12 +133,32 @@ export default function ContactForm({ defaultVehicle = '', vehicleId = null, veh
       <div className="cform__grid">
         {field('full_name', 'Full name', { attrs: { autoComplete: 'name' } }, true)}
         {field('email', 'Email address', { attrs: { type: 'email', autoComplete: 'email', inputMode: 'email' } }, true)}
-        {field('phone', 'Phone number', { attrs: { type: 'tel', autoComplete: 'tel', inputMode: 'tel' } })}
+        {field('phone', 'Phone number', { attrs: { type: 'tel', autoComplete: 'tel', inputMode: 'tel', placeholder: 'With country code' } })}
         {field('vehicle_interest', 'Vehicle of interest', { attrs: { list: 'cf-vehicles', placeholder: 'e.g. 2022 Toyota Corolla' } })}
       </div>
       <datalist id="cf-vehicles">
-        {vehicleOptions.map((o) => <option key={o} value={o} />)}
+        {options.map((v) => <option key={v.id} value={carTitle(v)} />)}
       </datalist>
+
+      <AnimatePresence initial={false}>
+        {car && (
+          <motion.div
+            key={car.id}
+            className="cform__car"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <img src={img(car.main_image, 320)} alt={carTitle(car)} />
+            <div>
+              <span>Your selection</span>
+              <strong>{car.make} {car.model}</strong>
+              <small>{car.year} · {car.for_rent ? formatRate(car.rent_per_day) : formatPrice(car.price)}</small>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {field('message', 'Message', { as: 'textarea', attrs: { placeholder: 'How can we help?' } }, true)}
 
       {/* Honeypot field — hidden from people, tempting to bots */}
@@ -139,7 +176,7 @@ export default function ContactForm({ defaultVehicle = '', vehicleId = null, veh
               {(links.mail() || links.whatsapp()) ? ' You can send it directly instead:' : ' Please check back soon.'}
               <div className="cform__fallback">
                 {links.mail() && (
-                  <a className="btn btn--outline btn--sm" href={links.mail(`Vehicle enquiry — ${values.vehicle_interest || site.name}`, composed)}>
+                  <a className="btn btn--outline btn--sm" href={links.mail(`Vehicle enquiry: ${values.vehicle_interest || site.name}`, composed)}>
                     <Mail /> Send by email
                   </a>
                 )}

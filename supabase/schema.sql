@@ -153,6 +153,118 @@ $$;
 revoke all on function public.vehicle_booked_dates(uuid) from public;
 grant execute on function public.vehicle_booked_dates(uuid) to anon, authenticated;
 
+-- ─── Rental documents and test drives ──────────────────────────────
+-- Licences and IDs live in a PRIVATE bucket: visitors can upload but never
+-- read, list or replace files. Only admins can open them, via short-lived links.
+alter table public.enquiries add column if not exists licence_path text;
+alter table public.enquiries add column if not exists id_path text;
+alter table public.enquiries add column if not exists drive_date date;
+alter table public.enquiries add column if not exists drive_time text;
+
+alter table public.enquiries drop constraint if exists enquiries_type_check;
+alter table public.enquiries add constraint enquiries_type_check check (type in ('sale', 'rental', 'test_drive'));
+alter table public.enquiries drop constraint if exists enquiries_test_drive_check;
+alter table public.enquiries add constraint enquiries_test_drive_check
+  check (type <> 'test_drive' or (drive_date is not null and drive_time is not null));
+
+create or replace function public.vehicle_test_drive_slots(vehicle uuid)
+returns table (drive_date date, drive_time text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select e.drive_date, e.drive_time
+  from public.enquiries e
+  where e.vehicle_id = vehicle and e.type = 'test_drive' and e.status = 'confirmed'
+    and e.drive_date >= current_date;
+$$;
+revoke all on function public.vehicle_test_drive_slots(uuid) from public;
+grant execute on function public.vehicle_test_drive_slots(uuid) to anon, authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('rental-documents', 'rental-documents', false, 10485760,
+        array['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+on conflict (id) do update
+  set public = false,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Visitors upload rental documents" on storage.objects;
+create policy "Visitors upload rental documents" on storage.objects
+  for insert to anon, authenticated
+  with check (bucket_id = 'rental-documents' and (storage.foldername(name))[1] = 'rentals');
+
+drop policy if exists "Admins read rental documents" on storage.objects;
+create policy "Admins read rental documents" on storage.objects
+  for select to authenticated using (bucket_id = 'rental-documents' and public.is_admin());
+
+drop policy if exists "Admins delete rental documents" on storage.objects;
+create policy "Admins delete rental documents" on storage.objects
+  for delete to authenticated using (bucket_id = 'rental-documents' and public.is_admin());
+
+-- ─── Live admin notifications ──────────────────────────────────────
+-- push_config holds the push keys: it has no API access at all. If you use a
+-- different Supabase project, change the URL in notify_admins() below.
+create extension if not exists pg_net;
+
+create table if not exists public.admin_push_subscriptions (
+  endpoint     text primary key,
+  user_id      uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  subscription jsonb not null,
+  created_at   timestamptz not null default now()
+);
+alter table public.admin_push_subscriptions enable row level security;
+drop policy if exists "Admins manage their own devices" on public.admin_push_subscriptions;
+create policy "Admins manage their own devices" on public.admin_push_subscriptions
+  for all to authenticated
+  using (public.is_admin() and user_id = auth.uid())
+  with check (public.is_admin() and user_id = auth.uid());
+grant select, insert, update, delete on public.admin_push_subscriptions to authenticated;
+
+create table if not exists public.push_config (
+  id             boolean primary key default true check (id),
+  public_key     text,
+  private_key    text,
+  webhook_secret text not null default encode(extensions.gen_random_bytes(32), 'hex')
+);
+alter table public.push_config enable row level security;
+revoke all on public.push_config from anon, authenticated;
+grant all on public.push_config to service_role;
+grant all on public.admin_push_subscriptions to service_role;
+insert into public.push_config (id) values (true) on conflict (id) do nothing;
+
+create or replace function public.notify_admins()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  secret text;
+begin
+  select webhook_secret into secret from public.push_config;
+  perform net.http_post(
+    url := 'https://prjsuywcebjpzbtaugyy.supabase.co/functions/v1/notify-admins',
+    headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', secret),
+    body := jsonb_build_object('id', new.id)
+  );
+  return new;
+exception when others then
+  return new; -- a notification problem must never stop a customer's enquiry
+end $$;
+revoke all on function public.notify_admins() from public;
+
+drop trigger if exists enquiries_notify_admins on public.enquiries;
+create trigger enquiries_notify_admins after insert on public.enquiries
+  for each row execute function public.notify_admins();
+
+do $$
+begin
+  alter publication supabase_realtime add table public.enquiries;
+exception when duplicate_object then null;
+end $$;
+
 -- ─── Table privileges ──────────────────────────────────────────────
 -- Explicit grants so the API works even when "automatically expose new
 -- tables" is off. Row Level Security above still decides which rows.

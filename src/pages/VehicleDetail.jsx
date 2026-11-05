@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MessageCircle, Phone, Mail, CarFront, Calendar, Gauge, Cog, Fuel, Zap, Palette } from 'lucide-react';
+import { ArrowLeft, CalendarCheck, MessageCircle, Phone, Mail, CarFront, Calendar, Gauge, Cog, Fuel, Zap, Palette } from 'lucide-react';
 import Gallery from '../components/Gallery';
 import VehicleCard from '../components/VehicleCard';
-import Reveal from '../components/Reveal';
 import { Loading, EmptyState, ErrorState } from '../components/States';
 import { useVehicle } from '../hooks/useVehicles';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { formatMileage, formatPrice, formatRate, isForSale, isRentable, STATUS_LABEL, vehicleTitle } from '../lib/format';
 import RentalRequest from '../components/RentalRequest';
+import TestDriveRequest from '../components/TestDriveRequest';
+import TrustBadge from '../components/TrustBadge';
 import { img } from '../lib/image';
 import { links, site } from '../config/site';
 
@@ -16,10 +18,11 @@ export default function VehicleDetail() {
   const { id } = useParams();
   const { data: v, all, loading, error, reload } = useVehicle(id);
   const title = vehicleTitle(v);
+  const [booking, setBooking] = useState(false);
 
   useDocumentMeta({
     title: v ? title : loading ? 'Vehicle' : 'Vehicle not found',
-    description: v ? `${title} — ${formatPrice(v.price)}, ${formatMileage(v.mileage)}, ${v.transmission}, ${v.fuel_type}. Enquire with TITAN MOTORS.` : undefined,
+    description: v ? `${title}: ${formatPrice(v.price)}, ${formatMileage(v.mileage)}, ${v.transmission}, ${v.fuel_type}. Enquire with TITAN MOTORS.` : undefined,
     image: v ? img(v.main_image, 1200) : undefined,
   });
 
@@ -63,6 +66,12 @@ export default function VehicleDetail() {
         <div className="detail__grid">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
             <Gallery images={images} title={title} />
+            {v.description && (
+              <div className="detail__description">
+                <span className="eyebrow">Overview</span>
+                <p>{v.description}</p>
+              </div>
+            )}
           </motion.div>
 
           <motion.aside
@@ -73,6 +82,8 @@ export default function VehicleDetail() {
           >
             <div className="detail__tags">
               <span className={`badge badge--${v.status}`}>{STATUS_LABEL[v.status]}</span>
+              {rental && <span className="vbadge vbadge--rent">For rent</span>}
+              <TrustBadge />
             </div>
             <p className="detail__make">{v.make}</p>
             <h1 className="detail__title">{v.model}</h1>
@@ -90,6 +101,8 @@ export default function VehicleDetail() {
 
             {rental ? (
               isRentable(v) ? <RentalRequest vehicle={v} /> : <p className="notice">This car isn&rsquo;t available to rent right now.</p>
+            ) : booking ? (
+              <TestDriveRequest vehicle={v} onBack={() => setBooking(false)} />
             ) : (
             <div className="detail__actions">
               {v.status === 'sold' ? (
@@ -103,6 +116,11 @@ export default function VehicleDetail() {
                 <Link className="btn btn--accent btn--lg btn--block" to={enquireHref}>
                   <MessageCircle aria-hidden="true" /> Enquire about this vehicle
                 </Link>
+              )}
+              {v.status === 'available' && (
+                <button type="button" className="btn btn--dark btn--lg btn--block" onClick={() => setBooking(true)}>
+                  <CalendarCheck aria-hidden="true" /> Book a test drive
+                </button>
               )}
               <div className="detail__secondary">
                 {links.tel && (
@@ -121,13 +139,6 @@ export default function VehicleDetail() {
             )}
           </motion.aside>
         </div>
-
-        {v.description && (
-          <Reveal className="detail__description">
-            <span className="eyebrow">Overview</span>
-            <p>{v.description}</p>
-          </Reveal>
-        )}
 
         {related.length > 0 && (
           <section className="detail__related" aria-labelledby="related-title">

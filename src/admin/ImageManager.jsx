@@ -16,7 +16,7 @@ export default function ImageManager({ images, onChange, onUploaded, invalid }) 
     const files = [...fileList].filter((f) => f.type.startsWith('image/'));
     const tooBig = files.filter((f) => f.size > MAX_MB * 1024 * 1024);
     const ok = files.filter((f) => f.size <= MAX_MB * 1024 * 1024);
-    setError(tooBig.length ? `${tooBig.length} file(s) skipped — images must be under ${MAX_MB} MB.` : '');
+    setError(tooBig.length ? `${tooBig.length} file(s) skipped. Images must be under ${MAX_MB} MB.` : '');
     if (!ok.length) return;
     setUploading((n) => n + ok.length);
     const urls = [];

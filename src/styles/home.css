@@ -32,7 +32,7 @@
   position: absolute; z-index: 2; pointer-events: none;
   /* Sized from the space available so the stats panel never covers the wheels */
   --car-top: calc(var(--top) + var(--intro) + var(--word) * 0.42);
-  width: min(62vw, 980px, max(460px, calc((100svh - var(--car-top) - 136px) * 1.98)));
+  width: min(62vw, 980px, max(460px, calc((100svh - var(--car-top) - 215px) * 1.95)));
   right: var(--gutter);
   top: var(--car-top);
 }
@@ -157,9 +157,6 @@ a.channels__item:hover { padding-left: 12px; }
 .cform__foot .field__hint { max-width: 32ch; }
 .cform__fallback { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 @media (max-width: 600px) { .cform__grid { grid-template-columns: 1fr; } .cform__foot .btn { width: 100%; } }
-.form-success { display: grid; gap: 14px; justify-items: start; padding: 24px 0; }
-.form-success__icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--text); color: var(--on-text); }
-.form-success h3 { font-size: 24px; }
 
 /* Tablets: a smaller, fully visible car; stats on one row; buttons size to content */
 @media (min-width: 600px) and (max-width: 900px) {

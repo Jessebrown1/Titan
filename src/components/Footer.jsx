@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import SocialIcons from './SocialIcons';
+import TrustBadge from './TrustBadge';
 import { NAV_ITEMS } from './Navbar';
 import { links, site } from '../config/site';
 
@@ -8,7 +9,7 @@ export default function Footer() {
   const contact = [
     { label: 'Telephone', value: site.phone, href: links.tel },
     { label: 'WhatsApp', value: site.whatsapp ? `+${site.whatsapp}` : '', href: links.whatsapp(`Hello ${site.name}, I have a question.`) },
-    { label: 'Email', value: site.email, href: links.mail(`Enquiry — ${site.name}`) },
+    { label: 'Email', value: site.email, href: links.mail(`Enquiry for ${site.name}`) },
     { label: 'Location', value: site.address, href: links.map },
   ];
   return (
@@ -18,6 +19,7 @@ export default function Footer() {
           <div className="footer__brand">
             <Logo light />
             <p className="footer__tagline">{site.tagline}</p>
+            <TrustBadge />
             <SocialIcons />
           </div>
           <nav className="footer__col" aria-label="Footer">

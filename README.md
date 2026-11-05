@@ -80,7 +80,7 @@ All contact details are environment variables, so no placeholder numbers ever ap
 | Variable | Example | Used for |
 |---|---|---|
 | `VITE_COMPANY_PHONE` | `+233 24 123 4567` | Call buttons (`tel:`) |
-| `VITE_COMPANY_WHATSAPP` | blank = same as phone | "Enquire about this vehicle" opens WhatsApp with a pre-filled message. Local Ghana numbers (024…) are converted to 233… automatically |
+| `VITE_COMPANY_WHATSAPP` | blank = same as phone | "Enquire about this vehicle" opens WhatsApp with a pre-filled message. Include the country code |
 | `VITE_COMPANY_EMAIL` | `sales@titanmotors.com` | Email buttons (`mailto:`) |
 | `VITE_COMPANY_ADDRESS` | `12 Example Road, Accra` | Location + Google Maps link |
 | `VITE_COMPANY_HOURS` | `Mon–Sat 9:00–18:00` | Contact section |
@@ -104,7 +104,21 @@ If WhatsApp isn't set, "Enquire about this vehicle" opens the contact form pre-f
 
 Each vehicle is either for sale or for rent, never both (Admin → edit a vehicle → *Listing*). Sale cars appear on **Our Vehicles** (`/vehicles`) and the homepage collection; rental cars appear only on **Rent a Car** (`/rent`) and need a daily rate.
 
-Customers pick dates, choose self-drive or a driver, see an estimate and send a request. **Nothing is paid online.** Requests appear in **Admin → Rentals**, where you confirm, decline or complete them. Confirming blocks those dates for that car on the website, and the admin warns about clashes. Customers see only the blocked dates, never who booked. Driver costs, deposits and rental terms are agreed directly with the customer.
+Customers pick dates, choose self-drive or a driver, see an estimate and send a request. **Nothing is paid online.** Requests appear in **Admin → Bookings**, where you confirm, decline or complete them. Confirming blocks those dates for that car on the website, and the admin warns about clashes. Customers see only the blocked dates, never who booked. Driver costs, deposits and rental terms are agreed directly with the customer.
+
+### Licences and IDs
+
+Customers can add their ID, plus a driving licence for self-drive, to a rental request. Both are optional. These go to the **private** `rental-documents` bucket. Visitors can upload but can't read, list, replace or delete files. Admins open them from **Bookings** through links that expire after two minutes, and can delete them once a rental is completed or declined. Deleting a request deletes its documents too.
+
+Add a privacy policy explaining how you collect and keep these documents before launch, and delete them when you no longer need them.
+
+### Live notifications
+
+While the admin is open, new enquiries and bookings appear instantly with a sound (Supabase Realtime). For notifications when the app is closed, the `notify-admins` Edge Function in `supabase/functions/` sends web push to every device that turned them on under **Get the app**. A database trigger on `enquiries` calls it. Its push keys are created on the server and stored in `push_config`, which has no public access. iPhones must install the app before they can receive these.
+
+### Test drives
+
+Sale cars have a **Book a test drive** button. Customers choose a date and hourly slot (9am to 4pm, set in `src/components/TestDriveRequest.jsx`). Requests appear under **Bookings → Test drives**, and confirming one blocks that slot for that car.
 
 ## 6. Enquiries
 
@@ -127,18 +141,25 @@ npm run build      # outputs dist/
 ## 8. Dark mode and animation
 
 - **Theme:** follows the visitor's device setting until they press the sun/moon toggle (navbar, mobile menu bar, admin sidebar); their choice is remembered. Switching plays a circular reveal from the button in browsers that support the View Transitions API. Colours live as tokens in `src/styles/tokens.css` — the dark set is under `:root[data-theme='dark']`.
+- **Loading and transitions:** a car loading screen plays once per visit (it lives in `index.html`), and a quick panel wipe plays between pages.
 - **Motion** (`src/components/motion/`): smooth inertia scrolling, letter-by-letter hero headline, cursor parallax and a light sweep across the hero car, counting stats, magnetic buttons, 3D tilt + glare on vehicle cards, clip-path image reveals, a marques marquee and a scroll progress bar. Everything calms down automatically for visitors who enable "reduce motion"; tilt/magnetic/parallax only run on mouse/trackpad devices.
 
-## 9. Performance
+## 9. Admin app
+
+The admin can be installed on a phone's home screen and opens full screen like a normal app (a Progressive Web App). Open **Admin → Get the app** on the phone and follow the steps there. On Android and desktop Chrome an Install button appears; on iPhone use Safari → Share → Add to Home Screen.
+
+The website must be live on an HTTPS address first; phones can't install from `localhost`. Sign in once inside the app. Only `/admin` is installable, so customers keep using the normal website. Files: `public/admin.webmanifest`, `public/sw.js`, `public/icons/`, `src/lib/pwa.js`.
+
+## 10. Performance
 
 - The Supabase library loads only in `/admin`; visitors get about 120 KB of gzipped JavaScript.
 - Inventory is cached (memory + localStorage) and refreshed in the background, so pages open instantly.
 - Other pages are fetched while the browser is idle. Fonts are self-hosted; the hero has a phone-sized image.
 - `npm run dev` is much slower than the real site because it isn't bundled. To judge speed, use `npm run build` then `npm run preview`.
 
-## 10. Replacing demo content
+## 11. Replacing demo content
 
-- **Hero image:** `public/images/hero-car.webp` (1600px) and `hero-car-860.webp` (phones) — transparent cut-outs, so the car overlaps the giant headline. Swap in your own transparent WebPs with the same names; keep the car complete in frame.
+- **Hero cars:** four transparent cut-outs rotate in the hero: `hero-car` (SUV), `hero-sports`, `hero-truck` and `hero-sedan` in `public/images/`, each with a phone-sized `-860` version. Swap in your own transparent WebPs with the same names; keep each car complete in frame and facing left so it drives off forwards. The list and timing are at the top of `src/components/sections/Hero.jsx`.
 - **Sample vehicles:** the listings no longer show a Demo label on the site, so replace them before launch. Delete them in `/admin` (or `delete from public.vehicles where is_demo;`). The bundled list in `src/data/demoVehicles.js` is only used when Supabase isn't configured. After editing it, `npm run seed:generate` rebuilds `supabase/seed.sql`.
 - **About section photos:** `src/components/sections/About.jsx`.
 - **Copy:** each section lives in `src/components/sections/`.
