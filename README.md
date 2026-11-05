@@ -134,7 +134,7 @@ Contact form submissions are stored in the `enquiries` table and appear under **
 npm run build      # outputs dist/
 ```
 
-- **Vercel:** import the repo, framework *Vite*, add the `VITE_*` environment variables, deploy. `vercel.json` handles client-side routes.
+- **Vercel:** import the repo and add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under Settings → Environment Variables, plus any company details. `vercel.json` sets the Vite build and client-side routes. Without those variables a Vercel build falls back to demo mode.
 - **Netlify:** build command `npm run build`, publish directory `dist`, add the env vars. `public/_redirects` handles client-side routes.
 - In Supabase **Authentication → URL Configuration**, set *Site URL* to your live domain.
 
